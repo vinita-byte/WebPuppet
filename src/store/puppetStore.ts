@@ -2,6 +2,10 @@
 
 import { create } from "zustand";
 import {
+  getCharacter,
+  type CharacterDef,
+} from "@/puppets/registry";
+import {
   type CalibrationOffsets,
   type FaceSignals,
   type HeadRotation,
@@ -11,66 +15,50 @@ import {
   createIdentityTransform,
 } from "./types";
 
-const SAMPLE_HIERARCHY: PuppetLayerNode[] = [
-  {
-    id: "root",
-    parentId: null,
-    rest: createIdentityTransform(),
-    driven: createIdentityTransform(),
-    zIndex: 0,
-  },
-  {
-    id: "head",
-    parentId: "root",
-    rest: createIdentityTransform({ y: -20 }),
-    driven: createIdentityTransform(),
-    zIndex: 1,
-  },
-  {
-    id: "leftEye",
-    parentId: "head",
-    rest: createIdentityTransform({ x: -42, y: -28 }),
-    driven: createIdentityTransform(),
-    zIndex: 2,
-  },
-  {
-    id: "rightEye",
-    parentId: "head",
-    rest: createIdentityTransform({ x: 42, y: -28 }),
-    driven: createIdentityTransform(),
-    zIndex: 2,
-  },
-  {
-    id: "leftPupil",
-    parentId: "leftEye",
-    rest: createIdentityTransform(),
-    driven: createIdentityTransform(),
-    zIndex: 3,
-  },
-  {
-    id: "rightPupil",
-    parentId: "rightEye",
-    rest: createIdentityTransform(),
-    driven: createIdentityTransform(),
-    zIndex: 3,
-  },
-  {
-    id: "mouth",
-    parentId: "head",
-    rest: createIdentityTransform({ y: 48 }),
-    driven: createIdentityTransform(),
-    zIndex: 2,
-  },
-  {
-    id: "jaw",
-    parentId: "head",
-    rest: createIdentityTransform({ y: 70 }),
-    driven: createIdentityTransform(),
-    zIndex: 1,
-  },
-];
+function nodesFromCharacter(
+  character: CharacterDef,
+): Record<PuppetLayerId, PuppetLayerNode> {
+  const nodes: Record<PuppetLayerId, PuppetLayerNode> = {};
+  for (const def of character.layers) {
+    nodes[def.id] = {
+      id: def.id,
+      parentId: def.parentId,
+      rest: createIdentityTransform(def.rest ?? {}),
+      driven: createIdentityTransform(),
+      zIndex: def.zIndex ?? 0,
+      visible: def.visible ?? true,
+      tag: def.tag,
+      swapSet: def.swapSet,
+    };
+  }
+  // Ensure swap-set defaults are the only visible members.
+  for (const set of character.swapSets) {
+    for (const id of set.layers) {
+      if (!nodes[id]) continue;
+      nodes[id] = {
+        ...nodes[id],
+        visible: id === set.defaultLayerId,
+      };
+    }
+  }
+  return nodes;
+}
+
+const DEFAULT_CHARACTER_ID = "jester";
+
+const initialFace: FaceSignals = {
+  blinkLeft: 0,
+  blinkRight: 0,
+  mouthOpen: 0,
+  mouthSmile: 0,
+  browInnerUp: 0,
+  gazeX: 0,
+  gazeY: 0,
+};
 
 export interface PuppetState {
+  characterId: string;
+  character: CharacterDef;
   layers: Record<PuppetLayerId, PuppetLayerNode>;
   layerOrder: PuppetLayerId[];
   rotation: HeadRotation;
@@ -79,9 +67,15 @@ export interface PuppetState {
   visemeWeights: Record<string, number>;
   trackingActive: boolean;
   fps: number;
-  /** Calibrated euler used by the viewport foreshortening pass. */
   displayRotation: HeadRotation;
+  /** Trigger ids currently held/toggled on. */
+  activeTriggers: Record<string, boolean>;
+  /** Active swap-set member per set id. */
+  activeSwaps: Record<string, string>;
+  /** Manual dragger offsets (layerId → xy). */
+  dragOffsets: Record<string, { x: number; y: number }>;
 
+  setCharacter: (id: string) => void;
   setRotation: (rotation: HeadRotation) => void;
   setDisplayRotation: (rotation: HeadRotation) => void;
   setFace: (face: Partial<FaceSignals>) => void;
@@ -90,6 +84,11 @@ export interface PuppetState {
   applyLayerDrivenBatch: (
     batch: Partial<Record<PuppetLayerId, Partial<LayerTransform>>>,
   ) => void;
+  setLayerVisibility: (id: PuppetLayerId, visible: boolean) => void;
+  setSwap: (setId: string, layerId: string) => void;
+  setTrigger: (triggerId: string, active: boolean) => void;
+  toggleTrigger: (triggerId: string) => void;
+  setDragOffset: (layerId: string, offset: { x: number; y: number } | null) => void;
   setCalibration: (offsets: Partial<CalibrationOffsets>) => void;
   captureNeutralPose: () => void;
   setTrackingActive: (active: boolean) => void;
@@ -97,26 +96,28 @@ export interface PuppetState {
   resetDriven: () => void;
 }
 
-function layersFromHierarchy(
-  nodes: PuppetLayerNode[],
-): Record<PuppetLayerId, PuppetLayerNode> {
-  return Object.fromEntries(nodes.map((n) => [n.id, structuredClone(n)])) as Record<
-    PuppetLayerId,
-    PuppetLayerNode
-  >;
+function boot(characterId: string) {
+  const character = getCharacter(characterId);
+  const layers = nodesFromCharacter(character);
+  const activeSwaps: Record<string, string> = {};
+  for (const set of character.swapSets) {
+    activeSwaps[set.id] = set.defaultLayerId;
+  }
+  return {
+    characterId: character.id,
+    character,
+    layers,
+    layerOrder: character.layers.map((l) => l.id),
+    activeSwaps,
+    activeTriggers: {} as Record<string, boolean>,
+    dragOffsets: {} as Record<string, { x: number; y: number }>,
+  };
 }
 
-const initialFace: FaceSignals = {
-  blinkLeft: 0,
-  blinkRight: 0,
-  mouthOpen: 0,
-  mouthSmile: 0,
-  browInnerUp: 0,
-};
+const initial = boot(DEFAULT_CHARACTER_ID);
 
 export const usePuppetStore = create<PuppetState>((set, get) => ({
-  layers: layersFromHierarchy(SAMPLE_HIERARCHY),
-  layerOrder: SAMPLE_HIERARCHY.map((n) => n.id),
+  ...initial,
   rotation: { yaw: 0, pitch: 0, roll: 0 },
   face: initialFace,
   calibration: { yaw: 0, pitch: 0, roll: 0, landmarkScale: 180 },
@@ -124,6 +125,17 @@ export const usePuppetStore = create<PuppetState>((set, get) => ({
   trackingActive: false,
   fps: 0,
   displayRotation: { yaw: 0, pitch: 0, roll: 0 },
+
+  setCharacter: (id) => {
+    const next = boot(id);
+    set({
+      ...next,
+      rotation: { yaw: 0, pitch: 0, roll: 0 },
+      displayRotation: { yaw: 0, pitch: 0, roll: 0 },
+      face: initialFace,
+      visemeWeights: { rest: 1 },
+    });
+  },
 
   setRotation: (rotation) => set({ rotation }),
   setDisplayRotation: (displayRotation) => set({ displayRotation }),
@@ -153,10 +165,7 @@ export const usePuppetStore = create<PuppetState>((set, get) => ({
   applyLayerDrivenBatch: (batch) =>
     set((state) => {
       const layers = { ...state.layers };
-      for (const [id, driven] of Object.entries(batch) as [
-        PuppetLayerId,
-        Partial<LayerTransform>,
-      ][]) {
+      for (const [id, driven] of Object.entries(batch)) {
         const layer = layers[id];
         if (!layer || !driven) continue;
         layers[id] = {
@@ -165,6 +174,54 @@ export const usePuppetStore = create<PuppetState>((set, get) => ({
         };
       }
       return { layers };
+    }),
+
+  setLayerVisibility: (id, visible) =>
+    set((state) => {
+      const layer = state.layers[id];
+      if (!layer) return state;
+      return {
+        layers: {
+          ...state.layers,
+          [id]: { ...layer, visible },
+        },
+      };
+    }),
+
+  setSwap: (setId, layerId) =>
+    set((state) => {
+      const setDef = state.character.swapSets.find((s) => s.id === setId);
+      if (!setDef) return state;
+      const layers = { ...state.layers };
+      for (const id of setDef.layers) {
+        if (!layers[id]) continue;
+        layers[id] = { ...layers[id], visible: id === layerId };
+      }
+      return {
+        layers,
+        activeSwaps: { ...state.activeSwaps, [setId]: layerId },
+      };
+    }),
+
+  setTrigger: (triggerId, active) =>
+    set((state) => ({
+      activeTriggers: { ...state.activeTriggers, [triggerId]: active },
+    })),
+
+  toggleTrigger: (triggerId) =>
+    set((state) => ({
+      activeTriggers: {
+        ...state.activeTriggers,
+        [triggerId]: !state.activeTriggers[triggerId],
+      },
+    })),
+
+  setDragOffset: (layerId, offset) =>
+    set((state) => {
+      const dragOffsets = { ...state.dragOffsets };
+      if (!offset) delete dragOffsets[layerId];
+      else dragOffsets[layerId] = offset;
+      return { dragOffsets };
     }),
 
   setCalibration: (offsets) =>
@@ -190,7 +247,7 @@ export const usePuppetStore = create<PuppetState>((set, get) => ({
   resetDriven: () =>
     set((state) => {
       const layers = { ...state.layers };
-      for (const id of Object.keys(layers) as PuppetLayerId[]) {
+      for (const id of Object.keys(layers)) {
         layers[id] = {
           ...layers[id],
           driven: createIdentityTransform(),
@@ -202,6 +259,8 @@ export const usePuppetStore = create<PuppetState>((set, get) => ({
         displayRotation: { yaw: 0, pitch: 0, roll: 0 },
         face: initialFace,
         visemeWeights: { rest: 1 },
+        activeTriggers: {},
+        dragOffsets: {},
       };
     }),
 }));

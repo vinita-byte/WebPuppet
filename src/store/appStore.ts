@@ -10,23 +10,31 @@ export type PipelineStatus =
   | "running"
   | "error";
 
+export type BehaviorKey =
+  | "headTracking"
+  | "blink"
+  | "autoBlink"
+  | "lipSync"
+  | "eyeGaze"
+  | "nutcrackerJaw"
+  | "breathe"
+  | "physics"
+  | "walk"
+  | "dragger";
+
 export interface AppStore {
   status: PipelineStatus;
   statusMessage: string;
   cameraEnabled: boolean;
   micEnabled: boolean;
-  behaviors: {
-    headTracking: boolean;
-    blink: boolean;
-    lipSync: boolean;
-  };
+  behaviors: Record<BehaviorKey, boolean>;
   showDebugOverlay: boolean;
   sharedBufferAvailable: boolean;
 
   setStatus: (status: PipelineStatus, message?: string) => void;
   setCameraEnabled: (enabled: boolean) => void;
   setMicEnabled: (enabled: boolean) => void;
-  toggleBehavior: (key: keyof AppStore["behaviors"]) => void;
+  toggleBehavior: (key: BehaviorKey) => void;
   setShowDebugOverlay: (show: boolean) => void;
   setSharedBufferAvailable: (available: boolean) => void;
 }
@@ -39,7 +47,14 @@ export const useAppStore = create<AppStore>((set) => ({
   behaviors: {
     headTracking: true,
     blink: true,
+    autoBlink: true,
     lipSync: true,
+    eyeGaze: true,
+    nutcrackerJaw: true,
+    breathe: true,
+    physics: true,
+    walk: false,
+    dragger: true,
   },
   showDebugOverlay: true,
   sharedBufferAvailable: false,

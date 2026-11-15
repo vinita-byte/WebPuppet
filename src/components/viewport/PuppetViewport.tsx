@@ -8,28 +8,28 @@ import { PuppetRig } from "./PuppetRig";
 
 export interface PuppetViewportProps {
   className?: string;
-  /** Optional external head rotation override (e.g. playback). */
   headRotationOverride?: HeadRotation | null;
 }
 
-/**
- * Pixi.js canvas hosting the hierarchical sample puppet.
- * Subscribes to Zustand puppet transforms and syncs each RAF tick.
- */
 export function PuppetViewport({
   className,
   headRotationOverride,
 }: PuppetViewportProps) {
   const hostRef = useRef<HTMLDivElement>(null);
   const appRef = useRef<Application | null>(null);
+  const stageRef = useRef<Container | null>(null);
+  const washRef = useRef<Graphics | null>(null);
   const rigRef = useRef<PuppetRig | null>(null);
   const debugTextRef = useRef<Text | null>(null);
   const overrideRef = useRef(headRotationOverride);
+  const characterId = usePuppetStore((s) => s.characterId);
+  const fitHeight = usePuppetStore((s) => s.character.fitHeight);
 
   useEffect(() => {
     overrideRef.current = headRotationOverride;
   }, [headRotationOverride]);
 
+  // Boot Pixi once
   useEffect(() => {
     const host = hostRef.current;
     if (!host) return;
@@ -57,33 +57,11 @@ export function PuppetViewport({
       const stageRoot = new Container();
       stageRoot.sortableChildren = true;
       app.stage.addChild(stageRoot);
+      stageRef.current = stageRoot;
 
-      // Soft stage wash
       const wash = new Graphics();
-      const redrawWash = () => {
-        const w = app.screen.width;
-        const h = app.screen.height;
-        wash.clear();
-        wash.rect(0, 0, w, h);
-        wash.fill({ color: 0x0f1419 });
-        wash.circle(w * 0.5, h * 0.42, Math.min(w, h) * 0.38);
-        wash.fill({ color: 0x1a2733, alpha: 0.9 });
-      };
-      redrawWash();
+      washRef.current = wash;
       stageRoot.addChild(wash);
-
-      const layers = usePuppetStore.getState().layers;
-      const rig = new PuppetRig(layers);
-      rigRef.current = rig;
-      stageRoot.addChild(rig.root);
-
-      const placeRig = () => {
-        rig.root.position.set(app.screen.width / 2, app.screen.height * 0.48);
-        const scale = Math.min(app.screen.width, app.screen.height) / 520;
-        rig.root.scale.set(scale);
-        redrawWash();
-      };
-      placeRig();
 
       const debug = new Text({
         text: "",
@@ -97,28 +75,89 @@ export function PuppetViewport({
       stageRoot.addChild(debug);
       debugTextRef.current = debug;
 
-      const onResize = () => placeRig();
-      window.addEventListener("resize", onResize);
+      const placeRig = () => {
+        const rig = rigRef.current;
+        if (!rig) return;
+        const state = usePuppetStore.getState();
+        rig.root.position.set(app.screen.width / 2, app.screen.height * 0.5);
+        const scale =
+          Math.min(app.screen.width, app.screen.height) /
+          Math.max(360, state.character.fitHeight);
+        rig.root.scale.set(scale);
+
+        const w = app.screen.width;
+        const h = app.screen.height;
+        wash.clear();
+        wash.rect(0, 0, w, h);
+        wash.fill({ color: 0x0f1419 });
+        wash.circle(w * 0.5, h * 0.45, Math.min(w, h) * 0.4);
+        wash.fill({ color: 0x1a2733, alpha: 0.9 });
+      };
+
+      window.addEventListener("resize", placeRig);
 
       app.ticker.add(() => {
         const state = usePuppetStore.getState();
-        const rotation =
-          overrideRef.current ?? state.displayRotation;
+        const rig = rigRef.current;
+        if (!rig) return;
+        // Drop frames from a previous character while the new rig mounts.
+        if (rig.characterId !== state.characterId) return;
+        const rotation = overrideRef.current ?? state.displayRotation;
         rig.syncFromStore(state.layers, rotation);
-
-        debug.text = [
-          `fps ${state.fps || "—"}`,
-          `yaw ${rotation.yaw.toFixed(1)}°`,
-          `pitch ${rotation.pitch.toFixed(1)}°`,
-          `roll ${rotation.roll.toFixed(1)}°`,
-          state.trackingActive ? "TRACK" : "IDLE",
-        ].join("  ·  ");
+        if (debugTextRef.current) {
+          debugTextRef.current.text = [
+            state.character.shortName,
+            `fps ${state.fps || "—"}`,
+            `yaw ${rotation.yaw.toFixed(1)}°`,
+            `pitch ${rotation.pitch.toFixed(1)}°`,
+            `roll ${rotation.roll.toFixed(1)}°`,
+            state.trackingActive ? "TRACK" : "IDLE",
+          ].join("  ·  ");
+        }
       });
 
-      // Stash cleanup on the app instance
-      (app as Application & { __cleanup?: () => void }).__cleanup = () => {
-        window.removeEventListener("resize", onResize);
+      // Pointer drag (Dragger)
+      let dragging: string | null = null;
+      const onPointerDown = (e: PointerEvent) => {
+        if (!usePuppetStore.getState().character) return;
+        // Prefer head as drag target when enabled
+        const enabled = true;
+        if (!enabled) return;
+        const state = usePuppetStore.getState();
+        if (!state.layers.head) return;
+        dragging = "head";
+        (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
       };
+      const onPointerMove = (e: PointerEvent) => {
+        if (!dragging || !rigRef.current) return;
+        const scale = rigRef.current.root.scale.x || 1;
+        usePuppetStore.getState().setDragOffset(dragging, {
+          x: (e.movementX || 0) / scale +
+            (usePuppetStore.getState().dragOffsets[dragging]?.x ?? 0),
+          y: (e.movementY || 0) / scale +
+            (usePuppetStore.getState().dragOffsets[dragging]?.y ?? 0),
+        });
+      };
+      const onPointerUp = () => {
+        dragging = null;
+      };
+      app.canvas.addEventListener("pointerdown", onPointerDown);
+      app.canvas.addEventListener("pointermove", onPointerMove);
+      app.canvas.addEventListener("pointerup", onPointerUp);
+
+      (app as Application & { __cleanup?: () => void }).__cleanup = () => {
+        window.removeEventListener("resize", placeRig);
+        app.canvas.removeEventListener("pointerdown", onPointerDown);
+        app.canvas.removeEventListener("pointermove", onPointerMove);
+        app.canvas.removeEventListener("pointerup", onPointerUp);
+      };
+
+      // Initial build
+      const state = usePuppetStore.getState();
+      const rig = new PuppetRig(state.character, state.layers);
+      rigRef.current = rig;
+      stageRoot.addChild(rig.root);
+      placeRig();
     })();
 
     return () => {
@@ -129,19 +168,43 @@ export function PuppetViewport({
         current.destroy(true, { children: true });
       }
       appRef.current = null;
+      stageRef.current = null;
+      washRef.current = null;
       rigRef.current?.destroy();
       rigRef.current = null;
-      if (host.firstChild) {
-        host.removeChild(host.firstChild);
-      }
+      if (host.firstChild) host.removeChild(host.firstChild);
     };
   }, []);
+
+  // Rebuild rig when character changes
+  useEffect(() => {
+    const app = appRef.current;
+    const stage = stageRef.current;
+    if (!app || !stage) return;
+
+    const prev = rigRef.current;
+    if (prev) {
+      stage.removeChild(prev.root);
+      prev.destroy();
+      rigRef.current = null;
+    }
+
+    const state = usePuppetStore.getState();
+    const rig = new PuppetRig(state.character, state.layers);
+    rigRef.current = rig;
+    // Keep wash (0) and debug text on top — insert puppet after wash.
+    stage.addChildAt(rig.root, Math.min(1, stage.children.length));
+    rig.root.position.set(app.screen.width / 2, app.screen.height * 0.5);
+    const scale =
+      Math.min(app.screen.width, app.screen.height) / Math.max(360, fitHeight);
+    rig.root.scale.set(scale);
+  }, [characterId, fitHeight]);
 
   return (
     <div
       ref={hostRef}
       className={className}
-      style={{ width: "100%", height: "100%", minHeight: 320 }}
+      style={{ width: "100%", height: "100%", minHeight: 320, touchAction: "none" }}
     />
   );
 }

@@ -5,26 +5,22 @@ import { BehaviorSystem } from "@/services/behaviors";
 import { useAppStore } from "@/store/appStore";
 import { usePuppetStore } from "@/store/puppetStore";
 import { useRecordingStore } from "@/store/recordingStore";
-import type { PuppetLayerId } from "@/store/types";
 import { createIdentityTransform } from "@/store/types";
 
-/**
- * Runs the modular behavior system each animation frame, writing driven
- * layer transforms into the Zustand puppet store for the Pixi viewport.
- */
 export function usePuppetPipeline(): void {
   const systemRef = useRef(new BehaviorSystem());
   const lastTs = useRef(0);
+  const startTs = useRef(0);
 
   useEffect(() => {
     let raf = 0;
+    startTs.current = performance.now();
 
     const tick = (ts: number) => {
       raf = requestAnimationFrame(tick);
       const dtMs = lastTs.current ? ts - lastTs.current : 16;
       lastTs.current = ts;
 
-      // Timeline playback owns transforms while playing.
       if (useRecordingStore.getState().state === "playing") return;
 
       const state = usePuppetStore.getState();
@@ -36,31 +32,54 @@ export function usePuppetPipeline(): void {
         visemeWeights: state.visemeWeights,
         calibration: state.calibration,
         dtMs,
+        timeMs: ts - startTs.current,
+        character: state.character,
+        activeTriggers: state.activeTriggers,
+        activeSwaps: state.activeSwaps,
+        dragOffsets: state.dragOffsets,
         enabled: app.behaviors,
       });
 
-      // Rebuild driven transforms from scratch so disabled behaviors leave no residue.
       const layers = { ...state.layers };
-      for (const id of Object.keys(layers) as PuppetLayerId[]) {
+      for (const id of Object.keys(layers)) {
         layers[id] = {
           ...layers[id],
           driven: createIdentityTransform(),
         };
       }
-      for (const [id, driven] of Object.entries(result.layers) as [
-        PuppetLayerId,
-        (typeof result.layers)[PuppetLayerId],
-      ][]) {
-        if (!driven) continue;
+      for (const [id, driven] of Object.entries(result.layers)) {
+        if (!driven || !layers[id]) continue;
         layers[id] = {
           ...layers[id],
           driven: { ...layers[id].driven, ...driven },
         };
       }
 
+      // Apply visibility overrides from blink/triggers.
+      for (const [id, visible] of Object.entries(result.visibility)) {
+        if (!layers[id]) continue;
+        layers[id] = { ...layers[id], visible };
+      }
+
+      // Apply swap-set selections (mouth visemes / trigger mouths).
+      let activeSwaps = state.activeSwaps;
+      if (Object.keys(result.swaps).length > 0) {
+        activeSwaps = { ...activeSwaps };
+        for (const [setId, layerId] of Object.entries(result.swaps)) {
+          const setDef = state.character.swapSets.find((s) => s.id === setId);
+          if (!setDef) continue;
+          activeSwaps[setId] = layerId;
+          for (const id of setDef.layers) {
+            if (!layers[id]) continue;
+            layers[id] = { ...layers[id], visible: id === layerId };
+          }
+        }
+      }
+
       usePuppetStore.setState({
         layers,
         displayRotation: result.headRotation,
+        activeSwaps,
       });
     };
 

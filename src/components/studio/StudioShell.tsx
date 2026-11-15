@@ -3,15 +3,32 @@
 import { useCallback } from "react";
 import { TimelineControls } from "@/components/timeline";
 import { PuppetViewport } from "@/components/viewport";
+import { useKeyboardTriggers } from "@/hooks/useKeyboardTriggers";
 import { usePuppetPipeline } from "@/hooks/usePuppetPipeline";
 import { useLipSync } from "@/services/audio";
 import { useFaceTracking } from "@/services/vision";
-import { useAppStore } from "@/store/appStore";
+import { useAppStore, type BehaviorKey } from "@/store/appStore";
 import { usePuppetStore } from "@/store/puppetStore";
+import { CharacterPicker } from "./CharacterPicker";
+import { ControlsPanel } from "./ControlsPanel";
 import { WebcamPreview } from "./WebcamPreview";
+
+const BEHAVIOR_LABELS: { key: BehaviorKey; label: string }[] = [
+  { key: "headTracking", label: "Head tracking" },
+  { key: "blink", label: "Face blink" },
+  { key: "autoBlink", label: "Auto blink" },
+  { key: "eyeGaze", label: "Eye gaze" },
+  { key: "lipSync", label: "Lip sync (visemes)" },
+  { key: "nutcrackerJaw", label: "Nutcracker jaw" },
+  { key: "breathe", label: "Breathe" },
+  { key: "physics", label: "Physics" },
+  { key: "walk", label: "Walk cycle" },
+  { key: "dragger", label: "Dragger" },
+];
 
 export function StudioShell() {
   usePuppetPipeline();
+  useKeyboardTriggers();
 
   const tracking = useFaceTracking({ targetFps: 30 });
   const lipSync = useLipSync();
@@ -22,6 +39,7 @@ export function StudioShell() {
   const toggleBehavior = useAppStore((s) => s.toggleBehavior);
   const sharedBufferAvailable = useAppStore((s) => s.sharedBufferAvailable);
   const fps = usePuppetStore((s) => s.fps);
+  const characterName = usePuppetStore((s) => s.character.shortName);
   const captureNeutralPose = usePuppetStore((s) => s.captureNeutralPose);
   const resetDriven = usePuppetStore((s) => s.resetDriven);
 
@@ -30,7 +48,7 @@ export function StudioShell() {
     try {
       await lipSync.start();
     } catch {
-      // Mic is optional — vision-only mouth still works via blendshapes.
+      // Mic optional
     }
   }, [tracking, lipSync]);
 
@@ -52,6 +70,9 @@ export function StudioShell() {
           </h1>
         </div>
         <div className="flex items-center gap-3 text-xs text-slate-400">
+          <span className="hidden rounded bg-white/5 px-2 py-1 sm:inline">
+            {characterName}
+          </span>
           <span
             className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 ${
               status === "running"
@@ -79,8 +100,10 @@ export function StudioShell() {
         </div>
       </header>
 
-      <div className="grid flex-1 grid-cols-1 lg:grid-cols-[280px_1fr]">
-        <aside className="flex flex-col gap-4 border-r border-white/10 bg-[#0e141c] p-4">
+      <div className="grid flex-1 grid-cols-1 lg:grid-cols-[300px_1fr]">
+        <aside className="flex max-h-[calc(100vh-8rem)] flex-col gap-4 overflow-y-auto border-r border-white/10 bg-[#0e141c] p-4">
+          <CharacterPicker />
+
           <section className="space-y-2">
             <h2 className="text-xs font-semibold tracking-wider text-slate-400 uppercase">
               Capture
@@ -132,17 +155,13 @@ export function StudioShell() {
             ) : null}
           </section>
 
+          <ControlsPanel />
+
           <section className="space-y-2">
             <h2 className="text-xs font-semibold tracking-wider text-slate-400 uppercase">
               Behaviors
             </h2>
-            {(
-              [
-                ["headTracking", "Head tracking"],
-                ["blink", "Blink detection"],
-                ["lipSync", "Audio lip-sync"],
-              ] as const
-            ).map(([key, label]) => (
+            {BEHAVIOR_LABELS.map(({ key, label }) => (
               <label
                 key={key}
                 className="flex cursor-pointer items-center justify-between rounded border border-white/10 px-3 py-2 text-sm"
@@ -158,11 +177,11 @@ export function StudioShell() {
             ))}
           </section>
 
-          <section className="mt-auto space-y-1 text-[11px] leading-relaxed text-slate-500">
+          <section className="space-y-1 text-[11px] leading-relaxed text-slate-500">
             <p>
-              Vision runs in a WebWorker (MediaPipe Face Landmarker). Landmark
-              buffers use SharedArrayBuffer when cross-origin isolated, else
-              transferable postMessage.
+              Layer tags, swap sets, keyboard triggers, auto-blink, breathe,
+              eye gaze, nutcracker jaw, physics, walk, and dragger — Character
+              Animator–style drivers on a WebWorker vision pipeline.
             </p>
           </section>
         </aside>

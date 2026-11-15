@@ -1,8 +1,8 @@
 import { Container, Graphics } from "pixi.js";
+import type { CharacterDef } from "@/puppets/registry";
 import type {
   HeadRotation,
   LayerTransform,
-  PuppetLayerId,
   PuppetLayerNode,
 } from "@/store/types";
 
@@ -12,100 +12,57 @@ interface LayerVisual {
 }
 
 /**
- * Hierarchical multi-layer 2D sample puppet rendered with Pixi Graphics.
- * Layers: root → head → (eyes → pupils), mouth, jaw.
+ * Hierarchical multi-layer 2D puppet built from a CharacterDef.
  */
 export class PuppetRig {
   readonly root: Container;
-  private readonly layers = new Map<PuppetLayerId, LayerVisual>();
-  private readonly nodes: Record<PuppetLayerId, PuppetLayerNode>;
+  readonly characterId: string;
+  private readonly layers = new Map<string, LayerVisual>();
+  private nodes: Record<string, PuppetLayerNode>;
 
-  constructor(nodes: Record<PuppetLayerId, PuppetLayerNode>) {
+  constructor(character: CharacterDef, nodes: Record<string, PuppetLayerNode>) {
+    this.characterId = character.id;
     this.nodes = nodes;
     this.root = new Container();
-    this.root.label = "puppet-root";
+    this.root.label = `puppet-${character.id}`;
+    this.root.sortableChildren = true;
 
-    this.buildLayer("root");
-    this.buildLayer("head");
-    this.buildLayer("jaw");
-    this.buildLayer("leftEye");
-    this.buildLayer("rightEye");
-    this.buildLayer("leftPupil");
-    this.buildLayer("rightPupil");
-    this.buildLayer("mouth");
+    // Parents must exist before children — defs are authored top-down.
+    for (const def of character.layers) {
+      this.buildLayer(def.id, def.parentId, def.zIndex ?? 0);
+    }
 
-    this.drawStaticArt();
+    for (const def of character.layers) {
+      const visual = this.layers.get(def.id);
+      if (!visual) continue;
+      def.draw(visual.graphics);
+    }
+
     this.applyRestPose();
+    this.applyVisibility(nodes);
   }
 
-  private buildLayer(id: PuppetLayerId): void {
-    const node = this.nodes[id];
+  private buildLayer(
+    id: string,
+    parentId: string | null,
+    zIndex: number,
+  ): void {
     const container = new Container();
     container.label = id;
-    container.zIndex = node.zIndex;
+    container.zIndex = zIndex;
     const graphics = new Graphics();
     container.addChild(graphics);
     this.layers.set(id, { container, graphics });
 
-    if (node.parentId) {
-      const parent = this.layers.get(node.parentId);
-      parent?.container.addChild(container);
-    } else {
-      this.root.addChild(container);
+    if (parentId) {
+      const parent = this.layers.get(parentId);
+      if (parent) {
+        parent.container.sortableChildren = true;
+        parent.container.addChild(container);
+        return;
+      }
     }
-  }
-
-  private drawStaticArt(): void {
-    // Head
-    const head = this.layers.get("head")!.graphics;
-    head.clear();
-    head.roundRect(-110, -130, 220, 250, 90);
-    head.fill({ color: 0xf2c9a0 });
-    head.stroke({ width: 3, color: 0xc48a5a });
-    // Ears
-    head.ellipse(-118, -10, 22, 32);
-    head.fill({ color: 0xe8b890 });
-    head.ellipse(118, -10, 22, 32);
-    head.fill({ color: 0xe8b890 });
-    // Nose
-    head.moveTo(0, -5);
-    head.lineTo(-10, 28);
-    head.lineTo(10, 28);
-    head.closePath();
-    head.fill({ color: 0xd9a07a });
-
-    // Jaw / chin plate
-    const jaw = this.layers.get("jaw")!.graphics;
-    jaw.clear();
-    jaw.ellipse(0, 0, 70, 28);
-    jaw.fill({ color: 0xe8b890, alpha: 0.85 });
-
-    // Eyes (sclera)
-    for (const id of ["leftEye", "rightEye"] as const) {
-      const g = this.layers.get(id)!.graphics;
-      g.clear();
-      g.ellipse(0, 0, 28, 22);
-      g.fill({ color: 0xffffff });
-      g.stroke({ width: 2, color: 0x3a2a1f });
-    }
-
-    // Pupils
-    for (const id of ["leftPupil", "rightPupil"] as const) {
-      const g = this.layers.get(id)!.graphics;
-      g.clear();
-      g.circle(0, 0, 10);
-      g.fill({ color: 0x1c1410 });
-      g.circle(-3, -3, 3);
-      g.fill({ color: 0xffffff, alpha: 0.85 });
-    }
-
-    // Mouth — slightly fuller rest shape so closed lips still read clearly
-    const mouth = this.layers.get("mouth")!.graphics;
-    mouth.clear();
-    mouth.roundRect(-38, -10, 76, 22, 11);
-    mouth.fill({ color: 0x8b2e3a });
-    mouth.ellipse(0, -1, 30, 7);
-    mouth.fill({ color: 0xff9aa8, alpha: 0.55 });
+    this.root.addChild(container);
   }
 
   private compose(rest: LayerTransform, driven: LayerTransform): LayerTransform {
@@ -119,7 +76,7 @@ export class PuppetRig {
     };
   }
 
-  private applyTransform(id: PuppetLayerId, t: LayerTransform): void {
+  private applyTransform(id: string, t: LayerTransform): void {
     const visual = this.layers.get(id);
     if (!visual) return;
     visual.container.position.set(t.x, t.y);
@@ -129,34 +86,34 @@ export class PuppetRig {
   }
 
   applyRestPose(): void {
-    for (const [id, node] of Object.entries(this.nodes) as [
-      PuppetLayerId,
-      PuppetLayerNode,
-    ][]) {
+    for (const [id, node] of Object.entries(this.nodes)) {
       this.applyTransform(id, node.rest);
     }
   }
 
-  /**
-   * Apply driven offsets from the behavior system / Zustand store.
-   */
+  applyVisibility(nodes: Record<string, PuppetLayerNode>): void {
+    for (const [id, node] of Object.entries(nodes)) {
+      const visual = this.layers.get(id);
+      if (!visual) continue;
+      visual.container.visible = node.visible;
+    }
+  }
+
   syncFromStore(
-    nodes: Record<PuppetLayerId, PuppetLayerNode>,
+    nodes: Record<string, PuppetLayerNode>,
     headRotation: HeadRotation,
   ): void {
-    for (const [id, node] of Object.entries(nodes) as [
-      PuppetLayerId,
-      PuppetLayerNode,
-    ][]) {
+    this.nodes = nodes;
+    for (const [id, node] of Object.entries(nodes)) {
       const composed = this.compose(node.rest, node.driven);
       this.applyTransform(id, composed);
+      const visual = this.layers.get(id);
+      if (visual) visual.container.visible = node.visible;
     }
 
-    // Additional head-space tilt using yaw/pitch as foreshortening cues.
     const head = this.layers.get("head")?.container;
     if (head) {
-      head.skew.x = (headRotation.yaw * Math.PI) / 180 * 0.15;
-      // Pitch already partially in y; nudge scale for depth.
+      head.skew.x = ((headRotation.yaw * Math.PI) / 180) * 0.12;
       const pitchScale = 1 - Math.abs(headRotation.pitch) / 250;
       head.scale.y *= pitchScale;
     }

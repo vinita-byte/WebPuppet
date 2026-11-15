@@ -1,3 +1,5 @@
+import type { CharacterDef } from "@/puppets/registry";
+import type { BehaviorKey } from "@/store/appStore";
 import type {
   CalibrationOffsets,
   FaceSignals,
@@ -13,19 +15,20 @@ export interface BehaviorContext {
   visemeWeights: Record<string, number>;
   calibration: CalibrationOffsets;
   dtMs: number;
-  enabled: {
-    headTracking: boolean;
-    blink: boolean;
-    lipSync: boolean;
-  };
+  timeMs: number;
+  character: CharacterDef;
+  activeTriggers: Record<string, boolean>;
+  activeSwaps: Record<string, string>;
+  dragOffsets: Record<string, { x: number; y: number }>;
+  enabled: Record<BehaviorKey, boolean>;
 }
 
-export type BehaviorOutput = Partial<
-  Record<PuppetLayerId, Partial<LayerTransform>>
-> & {
-  /** Optional head-level rotation override for the root/head container. */
+export interface BehaviorOutput {
+  layers?: Partial<Record<PuppetLayerId, Partial<LayerTransform>>>;
   headRotation?: HeadRotation;
-};
+  visibility?: Record<string, boolean>;
+  swaps?: Record<string, string>;
+}
 
 export interface Behavior {
   readonly id: string;

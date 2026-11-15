@@ -60,6 +60,9 @@ export function useFaceTracking(
           mouthOpen: frame.mouthOpen,
           mouthSmile: frame.mouthSmile,
           browInnerUp: frame.browInnerUp,
+          // Gaze approximated from head yaw/pitch until iris deltas are packed.
+          gazeX: frame.rotation.yaw / 55,
+          gazeY: frame.rotation.pitch / 40,
         });
       }
 

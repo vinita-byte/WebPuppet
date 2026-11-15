@@ -21,24 +21,18 @@ export interface LayerTransform {
   opacity: number;
 }
 
-export type PuppetLayerId =
-  | "root"
-  | "head"
-  | "leftEye"
-  | "rightEye"
-  | "leftPupil"
-  | "rightPupil"
-  | "mouth"
-  | "jaw";
+/** Layer ids are character-defined strings. */
+export type PuppetLayerId = string;
 
 export interface PuppetLayerNode {
   id: PuppetLayerId;
   parentId: PuppetLayerId | null;
-  /** Rest pose relative to parent. */
   rest: LayerTransform;
-  /** Live driven offset applied on top of rest. */
   driven: LayerTransform;
   zIndex: number;
+  visible: boolean;
+  tag: string;
+  swapSet?: string;
 }
 
 export interface FaceSignals {
@@ -47,13 +41,15 @@ export interface FaceSignals {
   mouthOpen: number;
   mouthSmile: number;
   browInnerUp: number;
+  /** Normalized gaze offsets from iris landmarks (-1..1). */
+  gazeX: number;
+  gazeY: number;
 }
 
 export interface CalibrationOffsets {
   yaw: number;
   pitch: number;
   roll: number;
-  /** Scale that maps normalized landmark deltas into puppet space. */
   landmarkScale: number;
 }
 
@@ -65,6 +61,8 @@ export interface Keyframe {
   layers: Partial<Record<PuppetLayerId, LayerTransform>>;
   face: FaceSignals;
   visemeWeights: Record<string, number>;
+  activeTriggers: string[];
+  activeSwaps: Record<string, string>;
 }
 
 export const IDENTITY_TRANSFORM: LayerTransform = {

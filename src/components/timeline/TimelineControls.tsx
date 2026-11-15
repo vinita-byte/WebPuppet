@@ -61,6 +61,10 @@ export function TimelineControls() {
         ) as Keyframe["layers"],
         face: { ...puppet.face },
         visemeWeights: { ...puppet.visemeWeights },
+        activeTriggers: Object.entries(puppet.activeTriggers)
+          .filter(([, v]) => v)
+          .map(([id]) => id),
+        activeSwaps: { ...puppet.activeSwaps },
       };
       addKeyframe(frame);
     };
@@ -211,6 +215,8 @@ function applyKeyframeAt(timeMs: number, keyframes: Keyframe[]): void {
     mouthOpen: lerp(prev.face.mouthOpen, next.face.mouthOpen),
     mouthSmile: lerp(prev.face.mouthSmile, next.face.mouthSmile),
     browInnerUp: lerp(prev.face.browInnerUp, next.face.browInnerUp),
+    gazeX: lerp(prev.face.gazeX ?? 0, next.face.gazeX ?? 0),
+    gazeY: lerp(prev.face.gazeY ?? 0, next.face.gazeY ?? 0),
   });
 
   const layerIds = new Set([
