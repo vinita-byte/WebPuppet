@@ -13,7 +13,7 @@ export const robotIntern: CharacterDef = {
   name: "Over-Caffeinated Robot Intern",
   shortName: "Robot",
   description:
-    "Cute retro robot — square head, antenna, spring arms, screen face.",
+    "Cute retro robot with a square head, antenna, spring arms, and a screen face.",
   accent: "#e76f51",
   fitHeight: 500,
   swapSets: [

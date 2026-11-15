@@ -12,7 +12,7 @@ export const owlMentor: CharacterDef = {
   name: "The Wise Old Owl Mentor",
   shortName: "Owl",
   description:
-    "Storybook owl professor — round glasses, graduation cap, warm browns.",
+    "Storybook owl professor with round glasses, a graduation cap, and warm browns.",
   accent: "#d4a017",
   fitHeight: 460,
   swapSets: [

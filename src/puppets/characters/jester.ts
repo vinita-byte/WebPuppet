@@ -12,7 +12,7 @@ export const jester: CharacterDef = {
   name: "The Jester Co-Host",
   shortName: "Jester",
   description:
-    "Cheeky WhatTheWeb jester — two-tone hat with bells, big eyes, bow tie.",
+    "Cheeky WhatTheWeb jester with a two tone hat, bells, big eyes, and a bow tie.",
   accent: "#6c3ce0",
   fitHeight: 520,
   swapSets: [

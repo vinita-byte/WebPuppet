@@ -24,14 +24,14 @@ const mono = IBM_Plex_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: `${SITE_NAME} — Browser Character Animator`,
+    default: `${SITE_NAME} · Face Puppet Studio`,
     template: `%s · ${SITE_NAME}`,
   },
   description: SITE_DESCRIPTION,
   applicationName: SITE_NAME,
   keywords: [
     "WebPuppet",
-    "Character Animator",
+    "face puppet",
     "face tracking",
     "MediaPipe",
     "Pixi.js",
@@ -53,12 +53,12 @@ export const metadata: Metadata = {
     type: "website",
     url: SITE_URL,
     siteName: SITE_NAME,
-    title: `${SITE_NAME} — Browser Character Animator`,
+    title: `${SITE_NAME} · Face Puppet Studio`,
     description: SITE_DESCRIPTION,
   },
   twitter: {
     card: "summary_large_image",
-    title: `${SITE_NAME} — Browser Character Animator`,
+    title: `${SITE_NAME} · Face Puppet Studio`,
     description: SITE_DESCRIPTION,
   },
   robots: {
@@ -77,7 +77,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en"
       className={`${display.variable} ${body.variable} ${mono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col overflow-hidden">{children}</body>
     </html>
   );
 }

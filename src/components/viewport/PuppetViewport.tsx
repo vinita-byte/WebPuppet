@@ -107,12 +107,12 @@ export function PuppetViewport({
         if (debugTextRef.current) {
           debugTextRef.current.text = [
             state.character.shortName,
-            `fps ${state.fps || "—"}`,
-            `yaw ${rotation.yaw.toFixed(1)}°`,
-            `pitch ${rotation.pitch.toFixed(1)}°`,
-            `roll ${rotation.roll.toFixed(1)}°`,
+            `fps ${state.fps || "-"}`,
+            `yaw ${rotation.yaw.toFixed(1)} deg`,
+            `pitch ${rotation.pitch.toFixed(1)} deg`,
+            `roll ${rotation.roll.toFixed(1)} deg`,
             state.trackingActive ? "TRACK" : "IDLE",
-          ].join("  ·  ");
+          ].join("  |  ");
         }
       });
 
@@ -204,7 +204,7 @@ export function PuppetViewport({
     <div
       ref={hostRef}
       className={className}
-      style={{ width: "100%", height: "100%", minHeight: 320, touchAction: "none" }}
+      style={{ width: "100%", height: "100%", minHeight: 0, touchAction: "none" }}
     />
   );
 }

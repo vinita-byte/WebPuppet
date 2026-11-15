@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@mediapipe/tasks-vision": "^1.2.3",
+    "fflate": "^0.8.3",
     "next": "16.4.6",
     "pixi.js": "^8.23.0",
     "react": "19.3.0",

@@ -108,9 +108,9 @@ export function TimelineControls() {
   ]);
 
   return (
-    <div className="flex flex-col gap-3 border-t border-white/10 bg-[#121820] px-4 py-3 text-sm text-slate-200">
+    <div className="flex flex-col gap-2 border-t border-white/10 bg-[#121820] px-3 py-2 text-sm text-slate-200 sm:gap-3 sm:px-4 sm:py-3">
       <div className="flex flex-wrap items-center gap-2">
-        <span className="mr-2 font-medium tracking-wide text-slate-400 uppercase text-xs">
+        <span className="mr-2 hidden font-medium tracking-wide text-slate-400 uppercase text-xs sm:inline">
           Timeline
         </span>
 

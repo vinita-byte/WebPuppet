@@ -40,7 +40,7 @@ export const pixelKid: CharacterDef = {
   name: "The Pixel-Art Street Kid",
   shortName: "Pixel",
   description:
-    "Chunky pixel streetwear kid — beanie, hoodie, sneakers, 16-color palette.",
+    "Chunky pixel streetwear kid with a beanie, hoodie, sneakers, and a 16 color palette.",
   accent: "#ee6c4d",
   fitHeight: 420,
   swapSets: [

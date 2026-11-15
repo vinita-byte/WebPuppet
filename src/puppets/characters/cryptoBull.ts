@@ -13,7 +13,7 @@ export const cryptoBull: CharacterDef = {
   name: "The Grumpy Crypto Bull",
   shortName: "Bull",
   description:
-    "Stocky bull in a tiny suit — permanently unimpressed, green & gold.",
+    "Stocky bull in a tiny suit. Permanently unimpressed. Green and gold.",
   accent: "#c9a227",
   fitHeight: 480,
   swapSets: [
