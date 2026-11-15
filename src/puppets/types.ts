@@ -43,6 +43,11 @@ export interface LayerDef {
   visible?: boolean;
   /** Which swap set this layer belongs to, if any. */
   swapSet?: string;
+  /**
+   * Optional SVG or PNG layer art (object URL or absolute path).
+   * Preferred external format is SVG inside a .webpuppet.zip package.
+   */
+  assetUrl?: string;
   draw: DrawFn;
 }
 

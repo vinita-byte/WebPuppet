@@ -48,6 +48,11 @@ export class MicAnalyzer {
     this.tick();
   }
 
+  /** Live mic stream for muxing into a video take (do not stop tracks yourself). */
+  getMediaStream(): MediaStream | null {
+    return this.stream;
+  }
+
   stop(): void {
     this.running = false;
     if (this.rafId) cancelAnimationFrame(this.rafId);

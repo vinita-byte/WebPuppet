@@ -33,8 +33,10 @@ Do not use WebPuppet as a cloud inference product. Vision and audio analysis run
 - Behaviors: head tracking, blink, auto blink, eye gaze, nutcracker jaw, breathe, physics, walk, dragger
 - Keyboard and on screen triggers
 - Timeline record and playback
-- Export active puppet as a zip (puppet.json plus layer PNGs)
-- Settings and last recording autosaved in IndexedDB
+- Export and import characters as .webpuppet.zip (prefer SVG layers for outside authoring; PNG also works)
+- Record a video take of the stage (and mic when available); download MOV or MP4
+- Video takes stay in tab memory only and clear when the session ends
+- Settings and last keyframe recording autosaved in IndexedDB
 - Pixi.js hierarchical viewport
 
 ## Technical notes for agents

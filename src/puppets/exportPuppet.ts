@@ -135,14 +135,18 @@ export async function exportPuppetZip(character: CharacterDef): Promise<void> {
   files["puppet.json"] = strToU8(JSON.stringify(pkg, null, 2));
   files["README.txt"] = strToU8(
     [
-      "WebPuppet puppet package",
+      "WebPuppet puppet package (.webpuppet.zip)",
       "",
       `Name: ${character.name}`,
       `Id: ${character.id}`,
       "",
       "Contents:",
-      "  puppet.json   Layer tree, tags, mouth swap sets, triggers, physics",
-      "  assets/layers PNG drawings for each visible layer",
+      "  puppet.json     Layer tree, tags, mouth swap sets, triggers, physics",
+      "  assets/layers   Layer art as PNG (built in export) or SVG (preferred for outside authoring)",
+      "",
+      "Right format for bringing characters from outside:",
+      "  Use this zip layout. Prefer SVG files for vector layers, PNG for pixel art.",
+      "  Import the zip in the studio Character package panel.",
       "",
       "Camera and mic data are never included. Everything in this zip is artwork and rig data only.",
     ].join("\n"),
