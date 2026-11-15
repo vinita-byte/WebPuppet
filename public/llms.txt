@@ -1,0 +1,48 @@
+# WebPuppet
+
+> WebPuppet is a high-performance, browser-based Character Animator clone that runs entirely client-side. It drives hierarchical 2D puppets from webcam face tracking (MediaPipe Face Landmarker in a WebWorker), audio-reactive lip sync, and keyboard/UI triggers — rendered with Pixi.js.
+
+## When to use WebPuppet
+
+Use WebPuppet to animate layered 2D puppets in real time from a webcam and microphone, record performance takes on a timeline, or explore Character Animator–style behaviors (head tracking, blink, eye gaze, nutcracker jaw, breathe, physics, walk, dragger, swap sets, triggers) without desktop Adobe software.
+
+Do not use WebPuppet as a server-side rendering or cloud inference product. Computer vision and audio analysis run in the visitor's browser; camera/mic permissions are required for tracking.
+
+## Site map for agents
+
+- [WebPuppet studio (live app)](https://webpuppet.vercel.app/): real-time puppet studio UI
+- [Full agent brief (llms-full.txt)](https://webpuppet.vercel.app/llms-full.txt): architecture, characters, behaviors, and technical surface
+- [XML sitemap](https://webpuppet.vercel.app/sitemap.xml)
+- [robots.txt](https://webpuppet.vercel.app/robots.txt)
+- [Source repository on GitHub](https://github.com/vinita-byte/WebPuppet)
+
+## Characters
+
+Procedural multi-layer puppets with tagged layers, mouth swap sets, and triggers:
+
+- The Jester Co-Host — WhatTheWeb jester; physics bells; juggle / laugh triggers
+- The Grumpy Crypto Bull — suit; separate brows/pupils; mouth swap set
+- Over-Caffeinated Robot Intern — screen face; spring arms; salute / overdrive
+- The Wise Old Owl Mentor — glasses; beak open/closed; tassel physics
+- The Pixel-Art Street Kid — hard-edge 16-color pixel art; three mouth shapes
+- Classic Host — original sample peach-skin host
+
+## Core capabilities
+
+- Webcam face tracking via MediaPipe Face Landmarker (WebWorker + SharedArrayBuffer / transferable buffers)
+- Audio lip sync (Web Audio → viseme weights → mouth swap sets)
+- Modular behaviors: head tracking, blink, auto-blink, eye gaze, nutcracker jaw, breathe, physics, walk, dragger
+- Keyboard and on-screen triggers / swap sets
+- Timeline keyframe record and playback
+- Pixi.js hierarchical viewport canvas
+
+## Technical notes for agents
+
+- Stack: Next.js (App Router), React, TypeScript, Tailwind CSS, Zustand, Pixi.js, `@mediapipe/tasks-vision`
+- Cross-origin isolation: `Cross-Origin-Opener-Policy: same-origin` and `Cross-Origin-Embedder-Policy: credentialless` (enables SharedArrayBuffer)
+- No authenticated API surface; all runtime media processing is client-side
+- Prefer linking humans and agents to `/llms-full.txt` for implementation detail
+
+## Optional
+
+- [Pull request #1 (foundation + characters)](https://github.com/vinita-byte/WebPuppet/pull/1)

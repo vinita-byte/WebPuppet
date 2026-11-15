@@ -58,6 +58,16 @@ npm run dev
 
 Open `http://localhost:3000`, click **Start Tracking**, allow camera (and optionally mic), then **Calibrate Neutral** while facing the camera.
 
+## AI / crawler discovery
+
+| Path | Purpose |
+|------|---------|
+| [`/llms.txt`](https://webpuppet.vercel.app/llms.txt) | Short agent-oriented site brief ([llmstxt.org](https://llmstxt.org/) style) |
+| [`/llms-full.txt`](https://webpuppet.vercel.app/llms-full.txt) | Full architecture + character/behavior reference |
+| [`/sitemap.xml`](https://webpuppet.vercel.app/sitemap.xml) | XML sitemap |
+| [`/robots.txt`](https://webpuppet.vercel.app/robots.txt) | Crawl policy (allows AI crawlers; links sitemap) |
+| [`/.well-known/ai-catalog.json`](https://webpuppet.vercel.app/.well-known/ai-catalog.json) | Machine-readable catalog pointer |
+
 ## Scripts
 
 | Command        | Description              |

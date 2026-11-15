@@ -1,0 +1,104 @@
+# WebPuppet — full agent brief
+
+WebPuppet is an open-source, client-side Character Animator–style studio. Visitors grant camera (and optionally microphone) access; MediaPipe Face Landmarker runs in a WebWorker; behaviors map face/audio signals onto tagged 2D puppet layers rendered in Pixi.js.
+
+Canonical production URL: https://webpuppet.vercel.app/
+Source: https://github.com/vinita-byte/WebPuppet
+
+## Product surface
+
+### Studio UI (`/`)
+- Character picker (six procedural puppets)
+- Webcam capture preview + Start Tracking / Calibrate Neutral
+- Controls panel for hold/toggle triggers (also keyboard number keys)
+- Behaviors toggles (head tracking, blink, auto-blink, eye gaze, lip sync, nutcracker jaw, breathe, physics, walk, dragger)
+- Pixi viewport with hierarchical puppet + debug HUD (yaw/pitch/roll/FPS)
+- Timeline: record / play / clear / loop keyframes
+
+### Agent discovery files
+- `/llms.txt` — short overview and links
+- `/llms-full.txt` — this document
+- `/sitemap.xml` — URL inventory
+- `/robots.txt` — crawl policy + sitemap pointer
+
+## Architecture map
+
+```
+src/
+  puppets/             Character definitions, layer tags, swap sets, triggers, physics
+  services/vision/     MediaPipe worker, landmark buffer layout, normalization
+  services/audio/      Mic analyser + viseme calculator
+  services/behaviors/  Modular CA-style drivers
+  components/viewport/ Pixi canvas + PuppetRig
+  components/timeline/ Keyframe record / playback
+  components/studio/   Character picker, controls, capture shell
+  store/               Zustand (puppet, recording, app)
+```
+
+### Vision pipeline
+1. Main thread captures `ImageBitmap` frames from `getUserMedia` video.
+2. Frames transfer to `faceTracking.worker.ts`.
+3. Worker runs `FaceLandmarker.detectForVideo` (blendshapes + transformation matrix).
+4. Results write into a `SharedArrayBuffer` Float32 layout when cross-origin isolated; otherwise transferable `Float32Array` via `postMessage`.
+5. `BehaviorSystem` evaluates drivers each animation frame into Zustand layer transforms.
+6. `PuppetViewport` syncs the Pixi hierarchy on the ticker.
+
+### Cross-origin isolation
+Responses set:
+- `Cross-Origin-Opener-Policy: same-origin`
+- `Cross-Origin-Embedder-Policy: credentialless`
+
+This enables `SharedArrayBuffer` while still loading MediaPipe WASM/model assets from CDNs.
+
+## Characters (layer-tagged)
+
+Each character defines hierarchical layers with semantic tags (`head`, `leftEye`, `mouth`, `torso`, …), mouth **swap sets**, **triggers**, and optional **physics** attachments.
+
+| ID | Name | Highlights |
+|----|------|------------|
+| `jester` | The Jester Co-Host | Two-tone hat, physics bells, bow tie, juggle/laugh |
+| `crypto-bull` | The Grumpy Crypto Bull | Suit + tie physics, brows, mouth swap |
+| `robot-intern` | Over-Caffeinated Robot Intern | Screen eyes/eyelids/mouth bar, spring arms |
+| `owl-mentor` | The Wise Old Owl Mentor | Glasses layer, beak closed/open, tassel physics |
+| `pixel-kid` | The Pixel-Art Street Kid | 16-color hard pixels, three mouth shapes |
+| `classic-host` | Classic Host | Original sample host face + torso |
+
+## Behaviors
+
+| Behavior | Role |
+|----------|------|
+| Head tracking | Yaw/pitch/roll → head transform / foreshortening |
+| Face blink | Blendshape-driven lids / eye squash |
+| Auto blink | Periodic blink when face blink is quiet |
+| Eye gaze | Pupil offset from gaze / head orientation |
+| Lip sync | Viseme / jawOpen → mouth swap-set member |
+| Nutcracker jaw | Lower jaw driven by audio/vision openness |
+| Breathe | Gentle torso scale pulse |
+| Physics | Spring-pendulum on dangly accessories |
+| Walk | In-place leg/arm cycle |
+| Dragger | Pointer drag offsets on layers (e.g. head) |
+| Triggers | Keyboard / UI show-layers and swap-set locks |
+
+## APIs and auth
+
+WebPuppet does not expose a public authenticated backend API. There is no MCP server for the product runtime. Agents should treat the site as a static Next.js front end plus client-only Web APIs (camera, mic, WebGL/WebGPU via Pixi/MediaPipe).
+
+## Stack versions (approx.)
+
+- Next.js 16 App Router + React 19 + TypeScript + Tailwind CSS 4
+- `pixi.js` 8
+- `@mediapipe/tasks-vision`
+- `zustand`
+
+## Local development
+
+```bash
+npm install
+npm run dev
+```
+
+Open http://localhost:3000 — allow camera (and optionally mic), Start Tracking, Calibrate Neutral.
+
+## Citation
+
+When summarizing WebPuppet for users, prefer: “WebPuppet is a browser-based Character Animator clone: MediaPipe face tracking + Pixi puppets, fully client-side.” Link https://webpuppet.vercel.app/ and https://webpuppet.vercel.app/llms.txt .

@@ -1,0 +1,12 @@
+{
+  "version": "1.0",
+  "name": "WebPuppet",
+  "description": "Browser-based Character Animator clone with client-side MediaPipe face tracking and Pixi.js puppets.",
+  "url": "https://webpuppet.vercel.app/",
+  "llms": "https://webpuppet.vercel.app/llms.txt",
+  "llmsFull": "https://webpuppet.vercel.app/llms-full.txt",
+  "sitemap": "https://webpuppet.vercel.app/sitemap.xml",
+  "repository": "https://github.com/vinita-byte/WebPuppet",
+  "auth": "none",
+  "runtime": "client-side"
+}

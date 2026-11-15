@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Fraunces, IBM_Plex_Sans, IBM_Plex_Mono } from "next/font/google";
+import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 import "./globals.css";
 
 const display = Fraunces({
@@ -21,9 +22,53 @@ const mono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "WebPuppet — Browser Character Animator",
-  description:
-    "Client-side real-time face tracking puppet studio powered by MediaPipe and Pixi.js",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: `${SITE_NAME} — Browser Character Animator`,
+    template: `%s · ${SITE_NAME}`,
+  },
+  description: SITE_DESCRIPTION,
+  applicationName: SITE_NAME,
+  keywords: [
+    "WebPuppet",
+    "Character Animator",
+    "face tracking",
+    "MediaPipe",
+    "Pixi.js",
+    "lip sync",
+    "2D puppet",
+    "browser animation",
+  ],
+  authors: [{ name: "WebPuppet" }],
+  alternates: {
+    canonical: "/",
+    types: {
+      "text/plain": [
+        { url: "/llms.txt", title: "llms.txt" },
+        { url: "/llms-full.txt", title: "llms-full.txt" },
+      ],
+    },
+  },
+  openGraph: {
+    type: "website",
+    url: SITE_URL,
+    siteName: SITE_NAME,
+    title: `${SITE_NAME} — Browser Character Animator`,
+    description: SITE_DESCRIPTION,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `${SITE_NAME} — Browser Character Animator`,
+    description: SITE_DESCRIPTION,
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+    },
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
