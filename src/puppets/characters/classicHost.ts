@@ -5,7 +5,7 @@ export const classicHost: CharacterDef = {
   id: "classic-host",
   name: "Classic Host",
   shortName: "Classic",
-  description: "Original peach-skin sample host with hierarchical face layers.",
+  description: "Original peach toned sample host with hierarchical face layers.",
   accent: "#38bdf8",
   fitHeight: 420,
   swapSets: [

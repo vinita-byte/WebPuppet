@@ -31,9 +31,15 @@ async function rasterizeLayer(
     "position:fixed;left:-9999px;top:0;width:512px;height:512px;opacity:0;pointer-events:none;";
   document.body.appendChild(host);
 
+  const canvas = document.createElement("canvas");
+  canvas.width = RENDER_SIZE;
+  canvas.height = RENDER_SIZE;
+  host.appendChild(canvas);
+
   const app = new Application();
   try {
     await app.init({
+      canvas,
       width: RENDER_SIZE,
       height: RENDER_SIZE,
       backgroundAlpha: 0,
@@ -42,7 +48,6 @@ async function rasterizeLayer(
       resolution: 1,
       autoDensity: false,
     });
-    host.appendChild(app.canvas);
 
     const g = new Graphics();
     draw(g);
@@ -56,7 +61,11 @@ async function rasterizeLayer(
   } catch {
     return null;
   } finally {
-    app.destroy(true, { children: true });
+    try {
+      app.destroy(true, { children: true });
+    } catch {
+      // ignore destroy races after a failed init
+    }
     host.remove();
   }
 }
