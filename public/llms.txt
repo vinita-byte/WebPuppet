@@ -1,0 +1,45 @@
+# WebPuppet
+
+> WebPuppet is a browser face puppet studio. Webcam face tracking drives layered 2D puppets on your device. Camera and mic data never leave your browser.
+
+## When to use WebPuppet
+
+Use WebPuppet to animate layered 2D puppets from a webcam and microphone, try a sample performance with no camera, record a short take on the timeline, or explore behaviors such as head tracking, blink, eye gaze, nutcracker jaw, breathe, physics, walk, dragger, swap sets, and triggers.
+
+Do not use WebPuppet as a cloud inference product. Vision and audio analysis run in the visitor browser.
+
+## Site map for agents
+
+- [WebPuppet studio](https://webpuppet.vercel.app/): live face puppet studio
+- [Full agent brief (llms-full.txt)](https://webpuppet.vercel.app/llms-full.txt): architecture, characters, behaviors
+- [XML sitemap](https://webpuppet.vercel.app/sitemap.xml)
+- [robots.txt](https://webpuppet.vercel.app/robots.txt)
+- [Source repository on GitHub](https://github.com/vinita-byte/WebPuppet)
+
+## Characters
+
+- The Jester Co-Host
+- The Grumpy Crypto Bull
+- Over Caffeinated Robot Intern
+- The Wise Old Owl Mentor
+- The Pixel Art Street Kid
+- Classic Host
+
+## Core capabilities
+
+- Webcam face tracking via MediaPipe Face Landmarker (WebWorker, self hosted model)
+- Try without a camera sample performance
+- Audio lip sync on device
+- Behaviors: head tracking, blink, auto blink, eye gaze, nutcracker jaw, breathe, physics, walk, dragger
+- Keyboard and on screen triggers
+- Timeline record and playback
+- Export active puppet as a zip (puppet.json plus layer PNGs)
+- Settings and last recording autosaved in IndexedDB
+- Pixi.js hierarchical viewport
+
+## Technical notes for agents
+
+- Stack: Next.js App Router, React, TypeScript, Tailwind CSS, Zustand, Pixi.js, MediaPipe Tasks Vision
+- Cross origin isolation headers enable SharedArrayBuffer when available
+- Tracking quality indicator: Good, Slow, Off
+- No authenticated API. All media processing is on the client.

@@ -1,0 +1,65 @@
+# WebPuppet full agent brief
+
+WebPuppet is an open source browser face puppet studio. Visitors can grant camera and optional microphone access, or start a sample performance with no camera. MediaPipe Face Landmarker runs in a WebWorker from self hosted assets. Behaviors map face and audio signals onto tagged 2D puppet layers rendered in Pixi.js.
+
+Canonical production URL: https://webpuppet.vercel.app/
+Source: https://github.com/vinita-byte/WebPuppet
+
+Privacy: camera and mic data never leave the device.
+
+## Product surface
+
+### Studio UI (`/`)
+- Character picker (six built in puppets)
+- Capture: Start Tracking, Try without a camera, Calibrate Neutral
+- Clear messages for camera denied, no camera, and tracking lost
+- Tracking quality: Good, Slow, Off
+- Controls panel for hold and toggle triggers
+- Behaviors toggles
+- Pixi viewport
+- Timeline record, play, clear, loop
+- Export puppet zip (puppet.json, layer PNGs, README; no camera or mic data)
+- Autosave of settings and last recording to IndexedDB
+
+### Agent discovery files
+- `/llms.txt`
+- `/llms-full.txt`
+- `/sitemap.xml`
+- `/robots.txt`
+- `/.well-known/ai-catalog.json`
+
+## Architecture map
+
+```
+src/
+  puppets/             Character definitions, layer tags, swap sets, triggers, physics, zip export
+  services/vision/     MediaPipe worker (self hosted), demo tracker, landmark buffers
+  services/audio/      Mic analyser and viseme calculator
+  services/behaviors/  Modular puppet drivers
+  components/viewport/ Pixi canvas and PuppetRig
+  components/timeline/ Keyframe record and playback
+  components/studio/   Character picker, controls, capture shell
+  store/               Zustand stores
+  lib/persistence.ts   IndexedDB autosave
+public/mediapipe/      Self hosted WASM and face_landmarker.task
+```
+
+## Characters
+
+| ID | Name |
+|----|------|
+| `jester` | The Jester Co-Host |
+| `crypto-bull` | The Grumpy Crypto Bull |
+| `robot-intern` | Over Caffeinated Robot Intern |
+| `owl-mentor` | The Wise Old Owl Mentor |
+| `pixel-kid` | The Pixel Art Street Kid |
+| `classic-host` | Classic Host |
+
+## Local development
+
+```bash
+npm install
+npm run dev
+```
+
+Open http://localhost:3000. Use Start Tracking or Try without a camera.
