@@ -1,0 +1,76 @@
+# WebPuppet full agent brief
+
+WebPuppet is an open source browser face puppet studio. Visitors can grant camera and optional microphone access, or start a sample performance with no camera. MediaPipe Face Landmarker runs in a WebWorker from self hosted assets. Behaviors map face and audio signals onto tagged 2D puppet layers rendered in Pixi.js.
+
+Canonical production URL: https://webpuppet.vercel.app/
+Source: https://github.com/vinita-byte/WebPuppet
+
+Privacy: camera and mic data never leave the device.
+
+## Product surface
+
+### Studio UI (`/`)
+- Menu bar: File, Edit, View, Puppet, Record, Help (keyboard accessible)
+- Left tool strip: camera, sample face, calibrate, record
+- Hero stage with fit framing, safe area, full screen, floating camera preview
+- Right inspector tabs: Puppet, Behaviors, Frame
+- Bottom status strip: camera, tracking quality, FPS, puppet, scene, frame, saved
+- Built in guided demo tour on first visit; replay from Help, Demo video
+- Character picker (new cast plus studio classics)
+- Twelve scene backgrounds with animated props
+- Stage frame modes: 16:9, 9:16, fill
+- Capture: Start camera, Try without a camera, Calibrate
+- Clear messages for camera denied, no camera, and tracking lost
+- Tracking quality: Good, Slow, Off
+- Behaviors toggles with reset defaults
+- SVG character idea prompts under Help
+- Pixi viewport
+- Timeline with time ruler, keyframe markers, 3 2 1 countdown, play, loop, clear with confirm and undo
+- Export dialog for MP4 or MOV
+- Character package export/import (webpuppet.zip with puppet.json; prefer SVG layer assets, PNG supported)
+- Record video take of the Pixi stage (+ mic when available); download MOV or MP4 via on device ffmpeg.wasm
+- Video takes are memory only and cleared on Clear, tab close, or session dispose
+- Autosave of settings and last keyframe recording to IndexedDB (video is never persisted)
+
+### Agent discovery files
+- `/llms.txt`
+- `/llms-full.txt`
+- `/sitemap.xml`
+- `/robots.txt`
+- `/.well-known/ai-catalog.json`
+
+## Architecture map
+
+```
+src/
+  puppets/             Character definitions, layer tags, swap sets, triggers, physics, zip export
+  services/vision/     MediaPipe worker (self hosted), demo tracker, landmark buffers
+  services/audio/      Mic analyser and viseme calculator
+  services/behaviors/  Modular puppet drivers
+  components/viewport/ Pixi canvas and PuppetRig
+  components/timeline/ Keyframe record and playback
+  components/studio/   Menu bar, tool strip, inspector, demo tour, shell
+  store/               Zustand stores (app, puppet, scene, recording, video, layout)
+  lib/persistence.ts   IndexedDB autosave
+public/mediapipe/      Self hosted WASM and face_landmarker.task
+```
+
+## Characters
+
+| ID | Name |
+|----|------|
+| `jester` | The Jester Co-Host |
+| `crypto-bull` | The Grumpy Crypto Bull |
+| `robot-intern` | Over Caffeinated Robot Intern |
+| `owl-mentor` | The Wise Old Owl Mentor |
+| `pixel-kid` | The Pixel Art Street Kid |
+| `classic-host` | Classic Host |
+
+## Local development
+
+```bash
+npm install
+npm run dev
+```
+
+Open http://localhost:3000. Use Start Tracking or Try without a camera.

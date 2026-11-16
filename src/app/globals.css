@@ -1,0 +1,134 @@
+@import "tailwindcss";
+
+:root {
+  /* Surface levels */
+  --surface-0: #070a0e;
+  --surface-1: #0b0f14;
+  --surface-2: #121820;
+  --surface-3: #1a2230;
+  --surface-4: #243044;
+
+  --foreground: #e8eef5;
+  --muted: #9aa8b8;
+  --faint: #6b7a8c;
+
+  --accent: #3b9eff;
+  --accent-soft: rgba(59, 158, 255, 0.16);
+  --record: #e11d48;
+  --record-soft: rgba(225, 29, 72, 0.18);
+  --success: #22c55e;
+  --success-soft: rgba(34, 197, 94, 0.16);
+  --warning: #f59e0b;
+  --warning-soft: rgba(245, 158, 11, 0.16);
+
+  --border: rgba(255, 255, 255, 0.1);
+  --border-strong: rgba(255, 255, 255, 0.18);
+  --focus: #7dd3fc;
+  --radius-control: 6px;
+  --radius-card: 8px;
+  --space: 8px;
+  --hit: 44px;
+
+  --background: var(--surface-1);
+  --panel: var(--surface-2);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-body);
+  --font-mono: var(--font-mono);
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-body), "Segoe UI", sans-serif;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+.wp-panel {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+.wp-tooltip {
+  pointer-events: none;
+  z-index: 80;
+  max-width: 16rem;
+  border-radius: var(--radius-control);
+  border: 1px solid var(--border-strong);
+  background: var(--surface-3);
+  padding: 6px 8px;
+  font-size: 12px;
+  color: var(--foreground);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.wp-menu {
+  min-width: 14rem;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--border-strong);
+  background: var(--surface-3);
+  padding: 4px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+}
+
+.wp-menu [role="menuitem"] {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border-radius: var(--radius-control);
+  padding: 8px 10px;
+  font-size: 13px;
+  color: var(--foreground);
+  text-align: left;
+}
+
+.wp-menu [role="menuitem"][aria-disabled="true"] {
+  color: var(--faint);
+}
+
+.wp-menu [role="menuitem"]:hover:not([aria-disabled="true"]),
+.wp-menu [role="menuitem"]:focus-visible:not([aria-disabled="true"]) {
+  background: var(--accent-soft);
+  outline: none;
+}
+
+.wp-kbd {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  color: var(--muted);
+}
