@@ -24,6 +24,7 @@ import { useLayoutStore } from "@/store/layoutStore";
 import { usePuppetStore } from "@/store/puppetStore";
 import { useRecordingStore } from "@/store/recordingStore";
 import { useSceneStore } from "@/store/sceneStore";
+import { useThemeStore } from "@/store/themeStore";
 import { useVideoStore } from "@/store/videoStore";
 import type { Keyframe } from "@/store/types";
 import { DemoTour, TOUR_STORAGE_KEY, WelcomeCard } from "./DemoTour";
@@ -31,6 +32,7 @@ import { HelpModals, type HelpModalId } from "./HelpModals";
 import { Inspector } from "./Inspector";
 import { MenuBar } from "./MenuBar";
 import { StatusStrip } from "./StatusStrip";
+import { Teleprompter } from "./Teleprompter";
 import { ToolStrip } from "./ToolStrip";
 import { WebcamPreview } from "./WebcamPreview";
 
@@ -39,9 +41,15 @@ export function StudioShell() {
   usePuppetPipeline();
   useKeyboardTriggers();
 
+  const hydrateTheme = useThemeStore((s) => s.hydrate);
+  const setThemeMode = useThemeStore((s) => s.setMode);
+  const themeMode = useThemeStore((s) => s.mode);
+  const cycleTheme = useThemeStore((s) => s.cycle);
+
   useEffect(() => {
-    document.documentElement.dataset.webpuppetHydrated = "1";
-  }, []);
+    document.documentElement.dataset.stageHydrated = "1";
+    hydrateTheme();
+  }, [hydrateTheme]);
 
   const tracking = useFaceTracking({ targetFps: 30 });
   const lipSync = useLipSync();
@@ -91,6 +99,7 @@ export function StudioShell() {
   const [helpModal, setHelpModal] = useState<HelpModalId>(null);
   const [showWelcome, setShowWelcome] = useState(false);
   const [tourOpen, setTourOpen] = useState(false);
+  const [teleprompterOpen, setTeleprompterOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
   const [confirmClear, setConfirmClear] = useState(false);
   const [undoToast, setUndoToast] = useState<{
@@ -427,12 +436,36 @@ export function StudioShell() {
   const elapsedLabel = formatElapsed(playheadMs);
 
   return (
-    <div className="flex h-dvh max-h-dvh flex-col overflow-hidden bg-[var(--surface-1)] text-[var(--foreground)]">
+    <div className="flex h-[100dvh] min-h-[100dvh] flex-col overflow-hidden bg-[var(--surface-1)] text-[var(--foreground)]">
       <MenuBar
         statusPills={
-          <span className="hidden text-xs text-[var(--muted)] xl:inline">
-            {statusMessage}
-          </span>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              aria-label={`Theme ${themeMode}. Click to change.`}
+              title={`Theme: ${themeMode}`}
+              onClick={cycleTheme}
+              className="hidden min-h-9 rounded-[var(--radius-control)] border border-[var(--border)] px-2 text-xs text-[var(--muted)] hover:text-[var(--foreground)] sm:inline-flex sm:items-center"
+            >
+              {themeMode === "light"
+                ? "Light"
+                : themeMode === "system"
+                  ? "System"
+                  : "Dark"}
+            </button>
+            <button
+              type="button"
+              aria-label="Open teleprompter"
+              title="Teleprompter"
+              onClick={() => setTeleprompterOpen(true)}
+              className="hidden min-h-9 rounded-[var(--radius-control)] border border-[var(--border)] px-2 text-xs text-[var(--muted)] hover:text-[var(--foreground)] md:inline-flex md:items-center"
+            >
+              Prompt
+            </button>
+            <span className="hidden text-xs text-[var(--muted)] xl:inline">
+              {statusMessage}
+            </span>
+          </div>
         }
         onNewSession={newSession}
         onSaveSession={saveSession}
@@ -481,6 +514,10 @@ export function StudioShell() {
             "noopener,noreferrer",
           );
         }}
+        onThemeDark={() => setThemeMode("dark")}
+        onThemeLight={() => setThemeMode("light")}
+        onThemeSystem={() => setThemeMode("system")}
+        onTeleprompter={() => setTeleprompterOpen(true)}
       />
 
       {restoredNote ? (
@@ -895,6 +932,11 @@ export function StudioShell() {
         open={tourOpen}
         onClose={(finished) => void onTourClose(finished)}
         onTryWithoutCamera={() => void startDemo()}
+      />
+
+      <Teleprompter
+        open={teleprompterOpen}
+        onClose={() => setTeleprompterOpen(false)}
       />
 
       <HelpModals id={helpModal} onClose={() => setHelpModal(null)} />

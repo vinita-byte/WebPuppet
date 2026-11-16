@@ -34,7 +34,7 @@ const TOUR_STEPS: TourStep[] = [
   {
     id: "welcome",
     title: "Welcome",
-    body: "Meet WebPuppet. Make a character copy your face, right in your browser.",
+    body: "Meet Stage. Make a character copy your face, right in your browser.",
   },
   {
     id: "privacy",
@@ -154,7 +154,7 @@ export function WelcomeCard({
           id={titleId}
           className="text-xl font-semibold tracking-tight text-[var(--foreground)]"
         >
-          Meet WebPuppet
+          Meet Stage
         </h2>
         <p className="mt-3 text-sm leading-relaxed text-[var(--muted)]">
           Make a character copy your face, right in your browser.

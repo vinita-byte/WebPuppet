@@ -1,16 +1,16 @@
-# WebPuppet
+# Stage
 
-> WebPuppet is a browser face puppet studio. Webcam face tracking drives layered 2D puppets on your device. Camera and mic data never leave your browser.
+> Stage is a browser face puppet studio. Webcam face tracking drives layered 2D puppets on your device. Camera and mic data never leave your browser.
 
-## When to use WebPuppet
+## When to use Stage
 
-Use WebPuppet to animate layered 2D puppets from a webcam and microphone, try a sample performance with no camera, take the built in guided tour, record a short take on the timeline, and export MP4 or MOV. Explore behaviors such as head tracking, blink, eye gaze, nutcracker jaw, breathe, physics, walk, dragger, swap sets, and triggers.
+Use Stage to animate layered 2D puppets from a webcam and microphone, try a sample performance with no camera, read a script with the built in teleprompter, take the guided tour, record a short take on the timeline, and export MP4 or MOV. Switch between light and dark themes. Explore behaviors such as head tracking, blink, eye gaze, nutcracker jaw, breathe, physics, walk, dragger, swap sets, and triggers.
 
-Do not use WebPuppet as a cloud inference product. Vision and audio analysis run in the visitor browser.
+Do not use Stage as a cloud inference product. Vision and audio analysis run in the visitor browser.
 
 ## Site map for agents
 
-- [WebPuppet studio](https://webpuppet.vercel.app/): live face puppet studio
+- [Stage studio](https://webpuppet.vercel.app/): live face puppet studio
 - [Full agent brief (llms-full.txt)](https://webpuppet.vercel.app/llms-full.txt): architecture, characters, behaviors
 - [XML sitemap](https://webpuppet.vercel.app/sitemap.xml)
 - [robots.txt](https://webpuppet.vercel.app/robots.txt)
@@ -18,7 +18,7 @@ Do not use WebPuppet as a cloud inference product. Vision and audio analysis run
 
 ## Workspace
 
-Pro studio layout with a menu bar (File, Edit, View, Puppet, Record, Help), left tool strip, hero stage, right inspector tabs (Puppet, Behaviors, Frame), docked timeline, and a bottom status strip.
+Pro studio layout with a menu bar (File, Edit, View, Puppet, Record, Help), left tool strip, hero stage, right inspector tabs (Puppet, Behaviors, Frame), docked timeline, teleprompter, and a bottom status strip.
 
 Help includes Demo video (guided tour), Quick start, Keyboard shortcuts, How tracking works, SVG character ideas, and About.
 
@@ -31,18 +31,15 @@ Studio classics: The Jester Co-Host, The Grumpy Crypto Bull, Over Caffeinated Ro
 ## Core capabilities
 
 - Built in guided demo tour on first visit, replayable from Help, Demo video
+- Teleprompter with editable script, scroll speed, font size, and mirror mode
+- Light, dark, and system themes
 - Webcam face tracking via MediaPipe Face Landmarker (WebWorker, self hosted model)
 - Try without a camera sample performance
 - Audio lip sync on device
-- Behaviors: head tracking, blink, auto blink, eye gaze, nutcracker jaw, breathe, physics, walk, dragger
-- Keyboard shortcuts for record, play, calibrate, tracking, fit, undo, and export
 - Timeline with time ruler, keyframe markers, countdown record, play, loop, clear with undo
 - Twelve scene backgrounds with animated props
 - Stage frames for 16:9, 9:16, or fill
-- Export and import characters as webpuppet.zip (prefer SVG layers for outside authoring; PNG also works)
-- SVG character idea prompts live under Help
-- Record a video take of the stage (and mic when available); download MOV or MP4
-- Video takes stay in tab memory only and clear when the session ends
+- Export video as MOV or MP4 on device
 - Settings and last keyframe recording autosaved in IndexedDB
 - Pixi.js hierarchical viewport
 

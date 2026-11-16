@@ -12,3 +12,5 @@ export * from "./StatusStrip";
 export * from "./Inspector";
 export * from "./ToolStrip";
 export * from "./HelpModals";
+export * from "./Teleprompter";
+

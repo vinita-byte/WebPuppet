@@ -1,6 +1,6 @@
-# WebPuppet full agent brief
+# Stage full agent brief
 
-WebPuppet is an open source browser face puppet studio. Visitors can grant camera and optional microphone access, or start a sample performance with no camera. MediaPipe Face Landmarker runs in a WebWorker from self hosted assets. Behaviors map face and audio signals onto tagged 2D puppet layers rendered in Pixi.js.
+Stage is an open source browser face puppet studio (formerly referred to in some repos as WebPuppet). Visitors can grant camera and optional microphone access, or start a sample performance with no camera. MediaPipe Face Landmarker runs in a WebWorker from self hosted assets. Behaviors map face and audio signals onto tagged 2D puppet layers rendered in Pixi.js.
 
 Canonical production URL: https://webpuppet.vercel.app/
 Source: https://github.com/vinita-byte/WebPuppet
@@ -10,11 +10,14 @@ Privacy: camera and mic data never leave the device.
 ## Product surface
 
 ### Studio UI (`/`)
+- Brand: Stage (logo mark, favicon, light and dark themes)
 - Menu bar: File, Edit, View, Puppet, Record, Help (keyboard accessible)
 - Left tool strip: camera, sample face, calibrate, record
 - Hero stage with fit framing, safe area, full screen, floating camera preview
+- Teleprompter overlay with editable script, scroll speed, font size, mirror mode
 - Right inspector tabs: Puppet, Behaviors, Frame
 - Bottom status strip: camera, tracking quality, FPS, puppet, scene, frame, saved
+- Scrollable page with visible SEO content below the studio
 - Built in guided demo tour on first visit; replay from Help, Demo video
 - Character picker (new cast plus studio classics)
 - Twelve scene backgrounds with animated props

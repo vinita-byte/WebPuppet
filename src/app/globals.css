@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
-:root {
+:root,
+html[data-theme="dark"] {
   /* Surface levels */
   --surface-0: #070a0e;
   --surface-1: #0b0f14;
@@ -10,10 +11,10 @@
 
   --foreground: #e8eef5;
   --muted: #9aa8b8;
-  --faint: #6b7a8c;
+  --faint: #8b9aab;
 
-  --accent: #3b9eff;
-  --accent-soft: rgba(59, 158, 255, 0.16);
+  --accent: #1868c7;
+  --accent-soft: rgba(24, 104, 199, 0.2);
   --record: #e11d48;
   --record-soft: rgba(225, 29, 72, 0.18);
   --success: #22c55e;
@@ -33,6 +34,34 @@
   --panel: var(--surface-2);
 }
 
+html[data-theme="light"] {
+  --surface-0: #e8eef5;
+  --surface-1: #f4f7fb;
+  --surface-2: #ffffff;
+  --surface-3: #eef3f9;
+  --surface-4: #dce6f2;
+
+  --foreground: #101820;
+  --muted: #4b5b6e;
+  --faint: #5d6e82;
+
+  --accent: #1558ad;
+  --accent-soft: rgba(21, 88, 173, 0.14);
+  --record: #c4143a;
+  --record-soft: rgba(196, 20, 58, 0.12);
+  --success: #15803d;
+  --success-soft: rgba(21, 128, 61, 0.12);
+  --warning: #b45309;
+  --warning-soft: rgba(180, 83, 9, 0.12);
+
+  --border: rgba(16, 24, 32, 0.12);
+  --border-strong: rgba(16, 24, 32, 0.2);
+  --focus: #1558ad;
+
+  --background: var(--surface-1);
+  --panel: var(--surface-2);
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -40,9 +69,13 @@
   --font-mono: var(--font-mono);
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 html,
 body {
-  height: 100%;
+  min-height: 100%;
 }
 
 body {
@@ -67,6 +100,10 @@ button:disabled {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
   *,
   *::before,
   *::after {
@@ -131,4 +168,38 @@ button:disabled {
   font-family: var(--font-mono), ui-monospace, monospace;
   font-size: 11px;
   color: var(--muted);
+}
+
+.stage-seo {
+  max-width: 48rem;
+  margin: 0 auto;
+  padding: 3rem 1.25rem 4rem;
+  color: var(--muted);
+}
+
+.stage-seo h2 {
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 1.5rem;
+  color: var(--foreground);
+}
+
+.stage-seo h3 {
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+  font-size: 1.05rem;
+  color: var(--foreground);
+}
+
+.stage-seo p,
+.stage-seo li {
+  margin-bottom: 0.65rem;
+  line-height: 1.6;
+}
+
+.stage-seo a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
