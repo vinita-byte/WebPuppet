@@ -297,14 +297,17 @@ export function TimelineControls({
     >
       {!compact ? (
         <div
-          role="separator"
+          role="slider"
           aria-orientation="horizontal"
           aria-label="Resize timeline"
+          aria-valuemin={56}
+          aria-valuemax={360}
+          aria-valuenow={timelineHeight}
           tabIndex={0}
           onPointerDown={onResizePointerDown}
           onPointerMove={onResizePointerMove}
           onPointerUp={onResizePointerUp}
-          className="absolute inset-x-0 top-0 z-10 h-2 cursor-ns-resize"
+          className="absolute inset-x-0 -top-2 z-10 h-6 cursor-ns-resize"
         />
       ) : null}
 

@@ -99,6 +99,7 @@ export function StudioShell() {
   } | null>(null);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [pipPos, setPipPos] = useState({ x: 12, y: 12 });
+  const [pipReady, setPipReady] = useState(false);
   const [shortScreen, setShortScreen] = useState(false);
   const [narrow, setNarrow] = useState(false);
   const [mobile, setMobile] = useState(false);
@@ -122,10 +123,16 @@ export function StudioShell() {
   }, []);
 
   useEffect(() => {
+    let first = true;
     const sync = () => {
-      setShortScreen(window.innerHeight < 700);
+      const short = window.innerHeight < 700;
+      setShortScreen(short);
       setNarrow(window.innerWidth < 1100);
       setMobile(window.innerWidth < 768);
+      if (first && short) {
+        useLayoutStore.getState().setTimelineOpen(false);
+      }
+      first = false;
     };
     sync();
     window.addEventListener("resize", sync);
@@ -137,6 +144,15 @@ export function StudioShell() {
       setRestoredNote(true);
     }
   }, [setRestoredNote]);
+
+  useEffect(() => {
+    // Park the camera preview in the top right so it does not cover the puppet.
+    const el = stageRef.current;
+    if (!el || pipReady) return;
+    const w = el.clientWidth;
+    setPipPos({ x: Math.max(12, w - 196), y: 12 });
+    setPipReady(true);
+  }, [pipReady, tracking.video, tracking.isDemo]);
 
   const frameStyle = useMemo(() => {
     const ratio = ASPECT_PRESETS[aspectMode].ratio;
@@ -689,7 +705,7 @@ export function StudioShell() {
 
           <TimelineControls
             getAudioStream={lipSync.getMediaStream}
-            compact={shortScreen && !timelineOpen}
+            compact={shortScreen}
             onRequestClear={requestClear}
             exportOpen={exportOpen}
             onExportOpenChange={setExportOpen}
@@ -699,14 +715,20 @@ export function StudioShell() {
         </div>
 
         {!mobile && inspectorOpen && !narrow ? (
-          <div className="hidden w-[300px] shrink-0 xl:flex 2xl:w-[320px]">
+          <div className="flex w-[280px] shrink-0 2xl:w-[320px]">
             <Inspector className="w-full" />
           </div>
         ) : null}
 
         {!mobile && inspectorOpen && narrow ? (
           <div className="absolute inset-y-0 right-0 z-40 flex w-[min(100%,320px)] shadow-2xl">
-            <Inspector className="w-full" />
+            <button
+              type="button"
+              aria-label="Close inspector"
+              className="absolute inset-0 -left-full w-screen bg-black/40"
+              onClick={() => setInspectorOpen(false)}
+            />
+            <Inspector className="relative z-10 w-full" />
           </div>
         ) : null}
 

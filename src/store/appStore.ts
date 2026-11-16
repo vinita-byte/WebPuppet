@@ -71,7 +71,7 @@ export const useAppStore = create<AppStore>((set) => ({
   demoMode: false,
   trackingQuality: "off",
   behaviors: { ...DEFAULT_BEHAVIORS },
-  showDebugOverlay: true,
+  showDebugOverlay: false,
   sharedBufferAvailable: false,
   mobilePanel: "stage",
 

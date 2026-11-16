@@ -173,7 +173,7 @@ export function WelcomeCard({
           <button
             type="button"
             onClick={onWatch}
-            className="inline-flex h-11 items-center justify-center rounded-[var(--radius-control)] bg-[var(--accent)] px-4 text-sm font-medium text-[var(--surface-0)] transition hover:brightness-110"
+            className="inline-flex h-11 items-center justify-center rounded-[var(--radius-control)] bg-[var(--accent)] px-4 text-sm font-medium text-white transition hover:brightness-110"
           >
             Watch the tour
           </button>
@@ -397,7 +397,7 @@ export function DemoTour({
             <button
               type="button"
               onClick={goNext}
-              className="inline-flex h-10 items-center justify-center rounded-[var(--radius-control)] bg-[var(--accent)] px-3 text-sm font-medium text-[var(--surface-0)] transition hover:brightness-110"
+              className="inline-flex h-10 items-center justify-center rounded-[var(--radius-control)] bg-[var(--accent)] px-3 text-sm font-medium text-white transition hover:brightness-110"
             >
               Next
             </button>
