@@ -6,3 +6,4 @@ export * from "./ScenePicker";
 export * from "./AspectPicker";
 export * from "./SvgIdeasPanel";
 export * from "./ExportPuppetButton";
+export * from "./DemoTour";
