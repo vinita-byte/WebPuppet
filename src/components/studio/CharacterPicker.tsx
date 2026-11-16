@@ -25,8 +25,10 @@ function PickerGrid({
             <button
               key={c.id}
               type="button"
+              aria-label={`Select ${c.name}`}
+              aria-pressed={active}
               onClick={() => setCharacter(c.id)}
-              className={`min-w-[8.5rem] shrink-0 rounded border px-2.5 py-2 text-left transition lg:min-w-0 ${
+              className={`min-h-11 min-w-[8.5rem] shrink-0 rounded border px-2.5 py-2 text-left transition lg:min-w-0 ${
                 active
                   ? "border-sky-400/50 bg-sky-500/15"
                   : "border-white/10 bg-black/20 hover:bg-white/5"

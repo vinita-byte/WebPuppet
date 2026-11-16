@@ -19,8 +19,10 @@ export function ScenePicker() {
             <button
               key={scene.id}
               type="button"
+              aria-label={`Scene ${scene.name}`}
+              aria-pressed={active}
               onClick={() => setScene(scene.id)}
-              className={`w-full rounded border px-2.5 py-2 text-left transition ${
+              className={`w-full min-h-11 rounded border px-2.5 py-2 text-left transition ${
                 active
                   ? "border-amber-400/50 bg-amber-500/10"
                   : "border-white/10 bg-black/20 hover:bg-white/5"

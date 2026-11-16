@@ -4,7 +4,7 @@
 
 ## When to use WebPuppet
 
-Use WebPuppet to animate layered 2D puppets from a webcam and microphone, try a sample performance with no camera, record a short take on the timeline, or explore behaviors such as head tracking, blink, eye gaze, nutcracker jaw, breathe, physics, walk, dragger, swap sets, and triggers.
+Use WebPuppet to animate layered 2D puppets from a webcam and microphone, try a sample performance with no camera, take the built in guided tour, record a short take on the timeline, and export MP4 or MOV. Explore behaviors such as head tracking, blink, eye gaze, nutcracker jaw, breathe, physics, walk, dragger, swap sets, and triggers.
 
 Do not use WebPuppet as a cloud inference product. Vision and audio analysis run in the visitor browser.
 
@@ -16,6 +16,12 @@ Do not use WebPuppet as a cloud inference product. Vision and audio analysis run
 - [robots.txt](https://webpuppet.vercel.app/robots.txt)
 - [Source repository on GitHub](https://github.com/vinita-byte/WebPuppet)
 
+## Workspace
+
+Pro studio layout with a menu bar (File, Edit, View, Puppet, Record, Help), left tool strip, hero stage, right inspector tabs (Puppet, Behaviors, Frame), docked timeline, and a bottom status strip.
+
+Help includes Demo video (guided tour), Quick start, Keyboard shortcuts, How tracking works, SVG character ideas, and About.
+
 ## Characters
 
 New cast: Nimbus, Pixel (robot), Professor Biscuit, Madame Mochi, Gordon, Captain Gruff, Big Bram, Bubbles, Bossy, Grumble.
@@ -24,17 +30,17 @@ Studio classics: The Jester Co-Host, The Grumpy Crypto Bull, Over Caffeinated Ro
 
 ## Core capabilities
 
+- Built in guided demo tour on first visit, replayable from Help, Demo video
 - Webcam face tracking via MediaPipe Face Landmarker (WebWorker, self hosted model)
 - Try without a camera sample performance
 - Audio lip sync on device
 - Behaviors: head tracking, blink, auto blink, eye gaze, nutcracker jaw, breathe, physics, walk, dragger
-- Keyboard and on screen triggers
-- Timeline record and playback
+- Keyboard shortcuts for record, play, calibrate, tracking, fit, undo, and export
+- Timeline with time ruler, keyframe markers, countdown record, play, loop, clear with undo
 - Twelve scene backgrounds with animated props
 - Stage frames for 16:9, 9:16, or fill
-- Timeline with keyframe markers, record, play, and video take export
-- Export and import characters as .webpuppet.zip (prefer SVG layers for outside authoring; PNG also works)
-- SVG character idea prompts for authors building puppets outside the app
+- Export and import characters as webpuppet.zip (prefer SVG layers for outside authoring; PNG also works)
+- SVG character idea prompts live under Help
 - Record a video take of the stage (and mic when available); download MOV or MP4
 - Video takes stay in tab memory only and clear when the session ends
 - Settings and last keyframe recording autosaved in IndexedDB

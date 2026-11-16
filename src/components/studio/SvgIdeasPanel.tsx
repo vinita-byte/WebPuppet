@@ -26,8 +26,8 @@ export function SvgIdeasPanel() {
           SVG character ideas
         </h2>
         <p className="mt-1 text-[11px] leading-relaxed text-slate-500">
-          Steal a prompt, build layers in your SVG tool, then import a
-          .webpuppet.zip. These ideas are meant to spark weird, memorable
+          Steal a prompt, build layers in your SVG tool, then package a
+          webpuppet.zip. These ideas are meant to spark weird, memorable
           puppets.
         </p>
       </div>
