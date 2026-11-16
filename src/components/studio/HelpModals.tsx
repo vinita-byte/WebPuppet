@@ -146,11 +146,11 @@ export function HelpModals({
   }
 
   return (
-    <ModalShell title="About WebPuppet" onClose={onClose}>
+    <ModalShell title="About Stage" onClose={onClose}>
       <p className="text-[var(--foreground)]">
-        WebPuppet is a face puppet studio that runs in your browser. Make a
-        character copy your face, record a take, and export video without leaving
-        this page.
+        Stage is a face puppet studio that runs in your browser. Make a
+        character copy your face, use the teleprompter, record a take, and export
+        video without leaving this page.
       </p>
       <p>
         Built with Next.js, Pixi.js, and on device face tracking. Report a

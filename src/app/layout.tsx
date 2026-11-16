@@ -1,6 +1,12 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Fraunces, IBM_Plex_Sans, IBM_Plex_Mono } from "next/font/google";
-import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
+import {
+  SITE_DESCRIPTION,
+  SITE_KEYWORDS,
+  SITE_NAME,
+  SITE_TAGLINE,
+  SITE_URL,
+} from "@/lib/site";
 import "./globals.css";
 
 const display = Fraunces({
@@ -24,22 +30,16 @@ const mono = IBM_Plex_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: `${SITE_NAME} · Face Puppet Studio`,
+    default: `${SITE_NAME} · ${SITE_TAGLINE}`,
     template: `%s · ${SITE_NAME}`,
   },
   description: SITE_DESCRIPTION,
   applicationName: SITE_NAME,
-  keywords: [
-    "WebPuppet",
-    "face puppet",
-    "face tracking",
-    "MediaPipe",
-    "Pixi.js",
-    "lip sync",
-    "2D puppet",
-    "browser animation",
-  ],
-  authors: [{ name: "WebPuppet" }],
+  keywords: SITE_KEYWORDS,
+  authors: [{ name: SITE_NAME }],
+  creator: SITE_NAME,
+  publisher: SITE_NAME,
+  category: "entertainment",
   alternates: {
     canonical: "/",
     types: {
@@ -53,13 +53,29 @@ export const metadata: Metadata = {
     type: "website",
     url: SITE_URL,
     siteName: SITE_NAME,
-    title: `${SITE_NAME} · Face Puppet Studio`,
+    title: `${SITE_NAME} · ${SITE_TAGLINE}`,
     description: SITE_DESCRIPTION,
+    images: [
+      {
+        url: "/brand/og.png",
+        width: 512,
+        height: 512,
+        alt: `${SITE_NAME} logo`,
+      },
+    ],
   },
   twitter: {
-    card: "summary_large_image",
-    title: `${SITE_NAME} · Face Puppet Studio`,
+    card: "summary",
+    title: `${SITE_NAME} · ${SITE_TAGLINE}`,
     description: SITE_DESCRIPTION,
+    images: ["/brand/og.png"],
+  },
+  icons: {
+    icon: [
+      { url: "/brand/icon.png", type: "image/png" },
+      { url: "/brand/favicon.ico" },
+    ],
+    apple: [{ url: "/apple-icon.png" }],
   },
   robots: {
     index: true,
@@ -67,17 +83,36 @@ export const metadata: Metadata = {
     googleBot: {
       index: true,
       follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
     },
   },
 };
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: dark)", color: "#0b0f14" },
+    { media: "(prefers-color-scheme: light)", color: "#f4f7fb" },
+  ],
+  colorScheme: "dark light",
+};
+
+const themeBoot = `(function(){try{var m=localStorage.getItem('stage.theme')||'dark';var r=m==='system'?(window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark'):m;document.documentElement.dataset.theme=r;document.documentElement.style.colorScheme=r;}catch(e){document.documentElement.dataset.theme='dark';}})();`;
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${display.variable} ${body.variable} ${mono.variable} h-full antialiased`}
+      data-theme="dark"
+      className={`${display.variable} ${body.variable} ${mono.variable} antialiased`}
+      suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col overflow-hidden">{children}</body>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeBoot }} />
+      </head>
+      <body className="min-h-full flex flex-col bg-[var(--background)] text-[var(--foreground)]">
+        {children}
+      </body>
     </html>
   );
 }

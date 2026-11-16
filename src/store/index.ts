@@ -5,3 +5,5 @@ export * from "./appStore";
 export * from "./layoutStore";
 export * from "./sceneStore";
 export * from "./videoStore";
+export * from "./themeStore";
+

@@ -9,6 +9,7 @@ import {
   type KeyboardEvent,
   type ReactNode,
 } from "react";
+import { StageLogo } from "@/components/brand/StageLogo";
 import { CAST_CHARACTERS, LEGACY_CHARACTERS } from "@/puppets/registry";
 import { SCENES } from "@/puppets/scenes";
 
@@ -43,6 +44,10 @@ export interface MenuBarActions {
   onSvgIdeas: () => void;
   onAbout: () => void;
   onReport: () => void;
+  onThemeDark: () => void;
+  onThemeLight: () => void;
+  onThemeSystem: () => void;
+  onTeleprompter: () => void;
 }
 
 export interface MenuBarProps extends MenuBarActions {
@@ -207,6 +212,31 @@ function buildMenus(actions: MenuBarActions): MenuItem[][] {
         shortcut: "F",
         run: actions.onFullscreen,
       },
+      { kind: "separator", id: "view-theme-sep" },
+      {
+        kind: "action",
+        id: "view-theme-dark",
+        label: "Theme Dark",
+        run: actions.onThemeDark,
+      },
+      {
+        kind: "action",
+        id: "view-theme-light",
+        label: "Theme Light",
+        run: actions.onThemeLight,
+      },
+      {
+        kind: "action",
+        id: "view-theme-system",
+        label: "Theme System",
+        run: actions.onThemeSystem,
+      },
+      {
+        kind: "action",
+        id: "view-teleprompter",
+        label: "Teleprompter",
+        run: actions.onTeleprompter,
+      },
     ],
     [
       ...CHARACTERS.map((c) => ({
@@ -308,7 +338,7 @@ function buildMenus(actions: MenuBarActions): MenuItem[][] {
       {
         kind: "action",
         id: "help-about",
-        label: "About WebPuppet",
+        label: "About Stage",
         run: actions.onAbout,
       },
       {
@@ -525,9 +555,7 @@ export function MenuBar(props: MenuBarProps) {
       ref={rootRef}
       className="flex h-11 shrink-0 items-center gap-3 border-b border-[var(--border)] bg-[var(--surface-2)] px-3"
     >
-      <div className="font-[family-name:var(--font-display)] text-lg tracking-tight text-[var(--foreground)]">
-        WebPuppet
-      </div>
+      <StageLogo />
 
       <nav
         className="hidden min-w-0 flex-1 items-center gap-1 lg:flex"
@@ -638,9 +666,7 @@ export function MenuBar(props: MenuBarProps) {
           aria-label="Studio menu"
         >
           <div className="flex h-11 shrink-0 items-center justify-between border-b border-[var(--border)] px-3">
-            <div className="font-[family-name:var(--font-display)] text-lg tracking-tight">
-              WebPuppet
-            </div>
+            <StageLogo />
             <button
               type="button"
               className="rounded-[var(--radius-control)] border border-[var(--border)] px-3 py-1.5 text-sm"
