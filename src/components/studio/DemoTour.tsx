@@ -257,9 +257,9 @@ export function DemoTour({
     onTryWithoutCamera();
   }, [open, stepIndex, onTryWithoutCamera]);
 
-  // Cursor toward data-tour targets
+  // Cursor toward data-tour targets (skipped when reduced motion)
   useEffect(() => {
-    if (!open || reducedMotion || paused) {
+    if (!open || reducedMotion) {
       setShowCursor(false);
       return;
     }
@@ -274,7 +274,7 @@ export function DemoTour({
     let cancelled = false;
     let raf = 0;
 
-    const place = () => {
+    const place = (animate: boolean) => {
       const center = targetCenter(selector);
       if (cancelled) return;
       if (!center) {
@@ -282,21 +282,25 @@ export function DemoTour({
         return;
       }
       setShowCursor(true);
+      if (!animate || paused) {
+        setCursorPos(center);
+        return;
+      }
       setCursorPos((prev) => prev ?? center);
-      // Second frame starts the CSS transition toward the target
       raf = requestAnimationFrame(() => {
         if (!cancelled) setCursorPos(center);
       });
     };
 
-    place();
-    window.addEventListener("resize", place);
-    window.addEventListener("scroll", place, true);
+    place(true);
+    const onLayout = () => place(false);
+    window.addEventListener("resize", onLayout);
+    window.addEventListener("scroll", onLayout, true);
     return () => {
       cancelled = true;
       cancelAnimationFrame(raf);
-      window.removeEventListener("resize", place);
-      window.removeEventListener("scroll", place, true);
+      window.removeEventListener("resize", onLayout);
+      window.removeEventListener("scroll", onLayout, true);
     };
   }, [open, stepIndex, reducedMotion, paused]);
 
