@@ -105,6 +105,11 @@ export function PuppetViewport({
         const h = app.screen.height;
         const scene = useSceneStore.getState().scene;
 
+        // Scene artists draw in centered coordinates; anchor containers mid stage.
+        far.position.set(w / 2, h / 2);
+        mid.position.set(w / 2, h / 2);
+        props.position.set(w / 2, h / 2);
+
         far.clear();
         scene.drawFar(far, w, h);
         mid.clear();
@@ -128,12 +133,14 @@ export function PuppetViewport({
         const state = usePuppetStore.getState();
         // Keep the full puppet inside the frame with a comfortable margin.
         const fit = Math.max(360, state.character.fitHeight);
+        const short = app.screen.height < 360;
+        const pad = short ? 0.68 : 0.78;
         const scale =
-          (Math.min(app.screen.width, app.screen.height) * 0.82) / fit;
+          (Math.min(app.screen.width, app.screen.height) * pad) / fit;
         rig.root.scale.set(scale);
         rig.root.position.set(
           app.screen.width / 2,
-          app.screen.height * 0.52,
+          app.screen.height * (short ? 0.5 : 0.54),
         );
         paintScene();
       };
