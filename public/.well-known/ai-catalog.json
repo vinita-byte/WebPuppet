@@ -1,7 +1,7 @@
 {
   "version": "1.0",
-  "name": "WebPuppet",
-  "description": "WebPuppet is a browser face puppet studio. Webcam face tracking drives layered 2D puppets on your device.",
+  "name": "Stage",
+  "description": "Stage is a browser face puppet studio. Webcam face tracking drives layered 2D puppets on your device. Includes a teleprompter and light or dark themes.",
   "url": "https://webpuppet.vercel.app/",
   "llms": "https://webpuppet.vercel.app/llms.txt",
   "llmsFull": "https://webpuppet.vercel.app/llms-full.txt",
