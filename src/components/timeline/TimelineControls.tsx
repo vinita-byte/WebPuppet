@@ -214,18 +214,48 @@ export function TimelineControls({ getAudioStream }: TimelineControlsProps) {
         </span>
       </div>
 
-      <input
-        type="range"
-        min={0}
-        max={Math.max(durationMs, 1)}
-        value={playheadMs}
-        onChange={(e) => {
-          const t = Number(e.target.value);
-          setPlayhead(t);
-          if (state !== "recording") applyKeyframeAt(t, keyframes);
-        }}
-        className="w-full accent-sky-500"
-      />
+      <div className="relative h-10 rounded border border-white/10 bg-black/30">
+        <div className="absolute inset-x-2 top-1.5 h-5 overflow-hidden">
+          {durationMs > 0
+            ? keyframes
+                .filter((_, i) => i % Math.max(1, Math.floor(keyframes.length / 48)) === 0)
+                .map((kf) => (
+                  <span
+                    key={kf.timeMs}
+                    className="absolute top-0 h-5 w-0.5 rounded-full bg-sky-400/70"
+                    style={{
+                      left: `${(kf.timeMs / Math.max(durationMs, 1)) * 100}%`,
+                    }}
+                  />
+                ))
+            : (
+              <span className="text-[10px] text-slate-500">
+                Keyframes appear here after you record
+              </span>
+            )}
+          {durationMs > 0 ? (
+            <span
+              className="absolute top-0 h-5 w-0.5 bg-amber-300"
+              style={{
+                left: `${(playheadMs / Math.max(durationMs, 1)) * 100}%`,
+              }}
+            />
+          ) : null}
+        </div>
+        <input
+          type="range"
+          min={0}
+          max={Math.max(durationMs, 1)}
+          value={playheadMs}
+          onChange={(e) => {
+            const t = Number(e.target.value);
+            setPlayhead(t);
+            if (state !== "recording") applyKeyframeAt(t, keyframes);
+          }}
+          className="absolute inset-x-0 bottom-0 w-full accent-sky-500"
+          aria-label="Timeline playhead"
+        />
+      </div>
 
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-[11px] font-medium tracking-wide text-slate-400 uppercase">

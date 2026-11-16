@@ -1,18 +1,23 @@
 "use client";
 
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { TimelineControls } from "@/components/timeline";
 import { PuppetViewport } from "@/components/viewport";
 import { useKeyboardTriggers } from "@/hooks/useKeyboardTriggers";
 import { usePersistence } from "@/hooks/usePersistence";
 import { usePuppetPipeline } from "@/hooks/usePuppetPipeline";
+import { ASPECT_PRESETS } from "@/puppets/scenes";
 import { useLipSync } from "@/services/audio";
 import { useFaceTracking } from "@/services/vision";
 import { useAppStore, type BehaviorKey } from "@/store/appStore";
 import { usePuppetStore } from "@/store/puppetStore";
+import { useSceneStore } from "@/store/sceneStore";
+import { AspectPicker } from "./AspectPicker";
 import { CharacterPicker } from "./CharacterPicker";
 import { ControlsPanel } from "./ControlsPanel";
 import { ExportPuppetButton } from "./ExportPuppetButton";
+import { ScenePicker } from "./ScenePicker";
+import { SvgIdeasPanel } from "./SvgIdeasPanel";
 import { WebcamPreview } from "./WebcamPreview";
 
 const BEHAVIOR_LABELS: { key: BehaviorKey; label: string }[] = [
@@ -40,7 +45,6 @@ export function StudioShell() {
   useKeyboardTriggers();
 
   useEffect(() => {
-    // Debug beacon for hydration checks in automated tests
     document.documentElement.dataset.webpuppetHydrated = "1";
   }, []);
 
@@ -58,6 +62,21 @@ export function StudioShell() {
   const characterName = usePuppetStore((s) => s.character.shortName);
   const captureNeutralPose = usePuppetStore((s) => s.captureNeutralPose);
   const resetDriven = usePuppetStore((s) => s.resetDriven);
+  const sceneName = useSceneStore((s) => s.scene.shortName);
+  const aspectMode = useSceneStore((s) => s.aspectMode);
+
+  const frameStyle = useMemo(() => {
+    const ratio = ASPECT_PRESETS[aspectMode].ratio;
+    if (!ratio) {
+      return { width: "100%", height: "100%" } as const;
+    }
+    return {
+      aspectRatio: String(ratio),
+      height: "100%",
+      width: "auto",
+      maxWidth: "100%",
+    } as const;
+  }, [aspectMode]);
 
   const startAll = useCallback(async () => {
     await tracking.start();
@@ -109,6 +128,12 @@ export function StudioShell() {
           <span className="hidden rounded bg-white/5 px-2 py-1 md:inline">
             {characterName}
           </span>
+          <span className="hidden rounded bg-white/5 px-2 py-1 lg:inline">
+            {sceneName}
+          </span>
+          <span className="rounded bg-white/5 px-2 py-1">
+            {ASPECT_PRESETS[aspectMode].label}
+          </span>
           <span
             className={`inline-flex max-w-[10rem] items-center gap-1.5 truncate rounded-full px-2 py-1 sm:max-w-none ${statusTone}`}
             title={statusMessage}
@@ -131,39 +156,37 @@ export function StudioShell() {
         </div>
       </header>
 
-      {/* Mobile panel switcher */}
       <div className="flex shrink-0 gap-1 border-b border-white/10 bg-[#0e141c] p-2 lg:hidden">
-        <button
-          type="button"
-          onClick={() => setMobilePanel("stage")}
-          className={`flex-1 rounded px-3 py-2 text-sm ${
-            mobilePanel === "stage"
-              ? "bg-sky-600 text-white"
-              : "bg-white/5 text-slate-300"
-          }`}
-        >
-          Stage
-        </button>
-        <button
-          type="button"
-          onClick={() => setMobilePanel("controls")}
-          className={`flex-1 rounded px-3 py-2 text-sm ${
-            mobilePanel === "controls"
-              ? "bg-sky-600 text-white"
-              : "bg-white/5 text-slate-300"
-          }`}
-        >
-          Controls
-        </button>
+        {(
+          [
+            ["stage", "Stage"],
+            ["controls", "Controls"],
+            ["create", "Create"],
+          ] as const
+        ).map(([id, label]) => (
+          <button
+            key={id}
+            type="button"
+            onClick={() => setMobilePanel(id)}
+            className={`flex-1 rounded px-3 py-2 text-sm ${
+              mobilePanel === id
+                ? "bg-sky-600 text-white"
+                : "bg-white/5 text-slate-300"
+            }`}
+          >
+            {label}
+          </button>
+        ))}
       </div>
 
-      <div className="grid min-h-0 flex-1 grid-cols-1 lg:grid-cols-[minmax(240px,300px)_1fr]">
+      <div className="grid min-h-0 flex-1 grid-cols-1 lg:grid-cols-[minmax(250px,320px)_1fr]">
         <aside
           className={`min-h-0 flex-col overflow-hidden border-r border-white/10 bg-[#0e141c] ${
-            mobilePanel === "controls" ? "flex" : "hidden"
+            mobilePanel === "controls" || mobilePanel === "create"
+              ? "flex"
+              : "hidden"
           } lg:flex`}
         >
-          {/* Sticky capture actions so Start Tracking stays visible */}
           <div className="sticky top-0 z-10 shrink-0 space-y-2 border-b border-white/10 bg-[#0e141c] p-3 sm:p-4">
             <h2 className="text-xs font-semibold tracking-wider text-slate-400 uppercase">
               Capture
@@ -234,8 +257,14 @@ export function StudioShell() {
             ) : null}
           </div>
 
-          <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-3 sm:p-4">
+          <div
+            className={`min-h-0 flex-1 space-y-4 overflow-y-auto p-3 sm:p-4 ${
+              mobilePanel === "create" ? "hidden lg:block" : "block"
+            }`}
+          >
+            <AspectPicker />
             <CharacterPicker />
+            <ScenePicker />
             <ExportPuppetButton />
             <ControlsPanel />
             <section className="space-y-2">
@@ -262,14 +291,28 @@ export function StudioShell() {
               data never leave your browser.
             </p>
           </div>
+
+          <div
+            className={`min-h-0 flex-1 overflow-y-auto p-3 sm:p-4 ${
+              mobilePanel === "create" ? "block" : "hidden lg:block"
+            } lg:border-t lg:border-white/10`}
+          >
+            <SvgIdeasPanel />
+          </div>
         </aside>
 
         <main
-          className={`relative min-h-0 min-w-0 ${
-            mobilePanel === "stage" ? "block" : "hidden"
-          } lg:block`}
+          className={`relative min-h-0 min-w-0 bg-[#070a0e] ${
+            mobilePanel === "stage" ? "flex" : "hidden"
+          } items-center justify-center lg:flex`}
         >
-          <PuppetViewport className="absolute inset-0" />
+          <div
+            className="relative overflow-hidden rounded-sm border border-white/10 shadow-[0_0_0_1px_rgba(255,255,255,0.04)]"
+            style={frameStyle}
+            data-testid="stage-frame"
+          >
+            <PuppetViewport className="absolute inset-0" />
+          </div>
         </main>
       </div>
 

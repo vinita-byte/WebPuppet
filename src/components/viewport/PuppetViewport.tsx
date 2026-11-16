@@ -5,6 +5,7 @@ import { useEffect, useRef } from "react";
 import { isRecordingHudHidden } from "@/lib/recordingHudBridge";
 import { registerViewportCanvas } from "@/lib/viewportBridge";
 import { usePuppetStore } from "@/store/puppetStore";
+import { useSceneStore } from "@/store/sceneStore";
 import type { HeadRotation } from "@/store/types";
 import { PuppetRig } from "./PuppetRig";
 
@@ -20,18 +21,22 @@ export function PuppetViewport({
   const hostRef = useRef<HTMLDivElement>(null);
   const appRef = useRef<Application | null>(null);
   const stageRef = useRef<Container | null>(null);
-  const washRef = useRef<Graphics | null>(null);
+  const sceneFarRef = useRef<Graphics | null>(null);
+  const sceneMidRef = useRef<Graphics | null>(null);
+  const scenePropsRef = useRef<Container | null>(null);
+  const propGraphicsRef = useRef<Map<string, Graphics>>(new Map());
   const rigRef = useRef<PuppetRig | null>(null);
   const debugTextRef = useRef<Text | null>(null);
   const overrideRef = useRef(headRotationOverride);
+  const paintSceneRef = useRef<() => void>(() => {});
   const characterId = usePuppetStore((s) => s.characterId);
   const fitHeight = usePuppetStore((s) => s.character.fitHeight);
+  const sceneId = useSceneStore((s) => s.sceneId);
 
   useEffect(() => {
     overrideRef.current = headRotationOverride;
   }, [headRotationOverride]);
 
-  // Boot Pixi once
   useEffect(() => {
     const host = hostRef.current;
     if (!host) return;
@@ -62,9 +67,21 @@ export function PuppetViewport({
       app.stage.addChild(stageRoot);
       stageRef.current = stageRoot;
 
-      const wash = new Graphics();
-      washRef.current = wash;
-      stageRoot.addChild(wash);
+      const sceneFar = new Graphics();
+      sceneFar.zIndex = 0;
+      sceneFarRef.current = sceneFar;
+      stageRoot.addChild(sceneFar);
+
+      const sceneMid = new Graphics();
+      sceneMid.zIndex = 1;
+      sceneMidRef.current = sceneMid;
+      stageRoot.addChild(sceneMid);
+
+      const sceneProps = new Container();
+      sceneProps.sortableChildren = true;
+      sceneProps.zIndex = 2;
+      scenePropsRef.current = sceneProps;
+      stageRoot.addChild(sceneProps);
 
       const debug = new Text({
         text: "",
@@ -74,27 +91,47 @@ export function PuppetViewport({
           fill: 0x9ec5e8,
         },
       });
+      debug.zIndex = 100;
       debug.position.set(12, 12);
       stageRoot.addChild(debug);
       debugTextRef.current = debug;
+
+      const paintScene = () => {
+        const far = sceneFarRef.current;
+        const mid = sceneMidRef.current;
+        const props = scenePropsRef.current;
+        if (!far || !mid || !props) return;
+        const w = app.screen.width;
+        const h = app.screen.height;
+        const scene = useSceneStore.getState().scene;
+
+        far.clear();
+        scene.drawFar(far, w, h);
+        mid.clear();
+        scene.drawMid(mid, w, h);
+
+        props.removeChildren();
+        propGraphicsRef.current.clear();
+        for (const prop of scene.props) {
+          const g = new Graphics();
+          g.zIndex = prop.zIndex ?? 0;
+          prop.draw(g, w, h);
+          props.addChild(g);
+          propGraphicsRef.current.set(prop.id, g);
+        }
+      };
+      paintSceneRef.current = paintScene;
 
       const placeRig = () => {
         const rig = rigRef.current;
         if (!rig) return;
         const state = usePuppetStore.getState();
-        rig.root.position.set(app.screen.width / 2, app.screen.height * 0.5);
+        rig.root.position.set(app.screen.width / 2, app.screen.height * 0.58);
         const scale =
           Math.min(app.screen.width, app.screen.height) /
           Math.max(360, state.character.fitHeight);
         rig.root.scale.set(scale);
-
-        const w = app.screen.width;
-        const h = app.screen.height;
-        wash.clear();
-        wash.rect(0, 0, w, h);
-        wash.fill({ color: 0x0f1419 });
-        wash.circle(w * 0.5, h * 0.45, Math.min(w, h) * 0.4);
-        wash.fill({ color: 0x1a2733, alpha: 0.9 });
+        paintScene();
       };
 
       window.addEventListener("resize", placeRig);
@@ -103,33 +140,39 @@ export function PuppetViewport({
         const state = usePuppetStore.getState();
         const rig = rigRef.current;
         if (!rig) return;
-        // Drop frames from a previous character while the new rig mounts.
         if (rig.characterId !== state.characterId) return;
         const rotation = overrideRef.current ?? state.displayRotation;
         rig.syncFromStore(state.layers, rotation);
+
+        const scene = useSceneStore.getState().scene;
+        const t = (performance.now() % 8000) / 8000;
+        const w = app.screen.width;
+        const h = app.screen.height;
+        for (const prop of scene.props) {
+          if (!prop.animate) continue;
+          const g = propGraphicsRef.current.get(prop.id);
+          if (!g) continue;
+          g.clear();
+          prop.draw(g, w, h);
+          prop.animate(g, t, w, h);
+        }
+
         if (debugTextRef.current) {
           const hideHud = isRecordingHudHidden();
           debugTextRef.current.visible = !hideHud;
           if (!hideHud) {
             debugTextRef.current.text = [
               state.character.shortName,
+              scene.shortName,
               `fps ${state.fps || "-"}`,
-              `yaw ${rotation.yaw.toFixed(1)} deg`,
-              `pitch ${rotation.pitch.toFixed(1)} deg`,
-              `roll ${rotation.roll.toFixed(1)} deg`,
               state.trackingActive ? "TRACK" : "IDLE",
             ].join("  |  ");
           }
         }
       });
 
-      // Pointer drag (Dragger)
       let dragging: string | null = null;
       const onPointerDown = (e: PointerEvent) => {
-        if (!usePuppetStore.getState().character) return;
-        // Prefer head as drag target when enabled
-        const enabled = true;
-        if (!enabled) return;
         const state = usePuppetStore.getState();
         if (!state.layers.head) return;
         dragging = "head";
@@ -139,9 +182,11 @@ export function PuppetViewport({
         if (!dragging || !rigRef.current) return;
         const scale = rigRef.current.root.scale.x || 1;
         usePuppetStore.getState().setDragOffset(dragging, {
-          x: (e.movementX || 0) / scale +
+          x:
+            (e.movementX || 0) / scale +
             (usePuppetStore.getState().dragOffsets[dragging]?.x ?? 0),
-          y: (e.movementY || 0) / scale +
+          y:
+            (e.movementY || 0) / scale +
             (usePuppetStore.getState().dragOffsets[dragging]?.y ?? 0),
         });
       };
@@ -159,9 +204,9 @@ export function PuppetViewport({
         app.canvas.removeEventListener("pointerup", onPointerUp);
       };
 
-      // Initial build
       const state = usePuppetStore.getState();
       const rig = new PuppetRig(state.character, state.layers);
+      rig.root.zIndex = 10;
       rigRef.current = rig;
       stageRoot.addChild(rig.root);
       placeRig();
@@ -177,14 +222,20 @@ export function PuppetViewport({
       }
       appRef.current = null;
       stageRef.current = null;
-      washRef.current = null;
+      sceneFarRef.current = null;
+      sceneMidRef.current = null;
+      scenePropsRef.current = null;
+      propGraphicsRef.current.clear();
       rigRef.current?.destroy();
       rigRef.current = null;
       if (host.firstChild) host.removeChild(host.firstChild);
     };
   }, []);
 
-  // Rebuild rig when character changes
+  useEffect(() => {
+    paintSceneRef.current();
+  }, [sceneId]);
+
   useEffect(() => {
     const app = appRef.current;
     const stage = stageRef.current;
@@ -199,10 +250,10 @@ export function PuppetViewport({
 
     const state = usePuppetStore.getState();
     const rig = new PuppetRig(state.character, state.layers);
+    rig.root.zIndex = 10;
     rigRef.current = rig;
-    // Keep wash (0) and debug text on top — insert puppet after wash.
-    stage.addChildAt(rig.root, Math.min(1, stage.children.length));
-    rig.root.position.set(app.screen.width / 2, app.screen.height * 0.5);
+    stage.addChild(rig.root);
+    rig.root.position.set(app.screen.width / 2, app.screen.height * 0.58);
     const scale =
       Math.min(app.screen.width, app.screen.height) / Math.max(360, fitHeight);
     rig.root.scale.set(scale);

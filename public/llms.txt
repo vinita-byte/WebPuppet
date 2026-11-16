@@ -18,12 +18,9 @@ Do not use WebPuppet as a cloud inference product. Vision and audio analysis run
 
 ## Characters
 
-- The Jester Co-Host
-- The Grumpy Crypto Bull
-- Over Caffeinated Robot Intern
-- The Wise Old Owl Mentor
-- The Pixel Art Street Kid
-- Classic Host
+New cast: Nimbus, Pixel (robot), Professor Biscuit, Madame Mochi, Gordon, Captain Gruff, Big Bram, Bubbles, Bossy, Grumble.
+
+Studio classics: The Jester Co-Host, The Grumpy Crypto Bull, Over Caffeinated Robot Intern, The Wise Old Owl Mentor, The Pixel Art Street Kid, Classic Host.
 
 ## Core capabilities
 
@@ -33,7 +30,11 @@ Do not use WebPuppet as a cloud inference product. Vision and audio analysis run
 - Behaviors: head tracking, blink, auto blink, eye gaze, nutcracker jaw, breathe, physics, walk, dragger
 - Keyboard and on screen triggers
 - Timeline record and playback
+- Twelve scene backgrounds with animated props
+- Stage frames for 16:9, 9:16, or fill
+- Timeline with keyframe markers, record, play, and video take export
 - Export and import characters as .webpuppet.zip (prefer SVG layers for outside authoring; PNG also works)
+- SVG character idea prompts for authors building puppets outside the app
 - Record a video take of the stage (and mic when available); download MOV or MP4
 - Video takes stay in tab memory only and clear when the session ends
 - Settings and last keyframe recording autosaved in IndexedDB

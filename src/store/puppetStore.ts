@@ -44,7 +44,7 @@ function nodesFromCharacter(
   return nodes;
 }
 
-const DEFAULT_CHARACTER_ID = "jester";
+const DEFAULT_CHARACTER_ID = "nimbus";
 
 const initialFace: FaceSignals = {
   blinkLeft: 0,
