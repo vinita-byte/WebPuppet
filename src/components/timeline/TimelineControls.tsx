@@ -307,7 +307,7 @@ export function TimelineControls({
           onPointerDown={onResizePointerDown}
           onPointerMove={onResizePointerMove}
           onPointerUp={onResizePointerUp}
-          className="absolute inset-x-0 top-0 z-10 h-2 cursor-ns-resize"
+          className="absolute inset-x-0 -top-2 z-10 h-6 cursor-ns-resize"
         />
       ) : null}
 
