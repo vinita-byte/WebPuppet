@@ -126,11 +126,15 @@ export function PuppetViewport({
         const rig = rigRef.current;
         if (!rig) return;
         const state = usePuppetStore.getState();
-        rig.root.position.set(app.screen.width / 2, app.screen.height * 0.58);
+        // Keep the full puppet inside the frame with a comfortable margin.
+        const fit = Math.max(360, state.character.fitHeight);
         const scale =
-          Math.min(app.screen.width, app.screen.height) /
-          Math.max(360, state.character.fitHeight);
+          (Math.min(app.screen.width, app.screen.height) * 0.82) / fit;
         rig.root.scale.set(scale);
+        rig.root.position.set(
+          app.screen.width / 2,
+          app.screen.height * 0.52,
+        );
         paintScene();
       };
 
@@ -254,9 +258,10 @@ export function PuppetViewport({
     rigRef.current = rig;
     stage.addChild(rig.root);
     rig.root.position.set(app.screen.width / 2, app.screen.height * 0.58);
-    const scale =
-      Math.min(app.screen.width, app.screen.height) / Math.max(360, fitHeight);
+    const fit = Math.max(360, fitHeight);
+    const scale = (Math.min(app.screen.width, app.screen.height) * 0.82) / fit;
     rig.root.scale.set(scale);
+    rig.root.position.set(app.screen.width / 2, app.screen.height * 0.52);
   }, [characterId, fitHeight]);
 
   return (
