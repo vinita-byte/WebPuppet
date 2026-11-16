@@ -1,19 +1,25 @@
 "use client";
 
-import { CHARACTERS } from "@/puppets/registry";
+import { CAST_CHARACTERS, LEGACY_CHARACTERS } from "@/puppets/registry";
 import { usePuppetStore } from "@/store/puppetStore";
 
-export function CharacterPicker() {
+function PickerGrid({
+  title,
+  characters,
+}: {
+  title: string;
+  characters: typeof CAST_CHARACTERS;
+}) {
   const characterId = usePuppetStore((s) => s.characterId);
   const setCharacter = usePuppetStore((s) => s.setCharacter);
 
   return (
-    <section className="space-y-2">
-      <h2 className="text-xs font-semibold tracking-wider text-slate-400 uppercase">
-        Characters
-      </h2>
+    <div className="space-y-1.5">
+      <h3 className="text-[10px] font-semibold tracking-wider text-slate-500 uppercase">
+        {title}
+      </h3>
       <div className="flex gap-2 overflow-x-auto pb-1 lg:grid lg:grid-cols-2 lg:overflow-visible lg:pb-0">
-        {CHARACTERS.map((c) => {
+        {characters.map((c) => {
           const active = c.id === characterId;
           return (
             <button
@@ -39,6 +45,20 @@ export function CharacterPicker() {
             </button>
           );
         })}
+      </div>
+    </div>
+  );
+}
+
+export function CharacterPicker() {
+  return (
+    <section className="space-y-3">
+      <h2 className="text-xs font-semibold tracking-wider text-slate-400 uppercase">
+        Characters
+      </h2>
+      <div className="max-h-64 space-y-3 overflow-y-auto pr-1 lg:max-h-80">
+        <PickerGrid title="New cast" characters={CAST_CHARACTERS} />
+        <PickerGrid title="Studio classics" characters={LEGACY_CHARACTERS} />
       </div>
     </section>
   );

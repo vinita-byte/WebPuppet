@@ -25,21 +25,31 @@ export class LipSyncBehavior implements Behavior {
         ? fromAudio.open * 0.85 + ctx.face.mouthOpen * 0.15
         : ctx.face.mouthOpen;
 
+    const smile = ctx.face.mouthSmile;
     let layerId = mouthSet.defaultLayerId;
-    if (open > 0.72 && mouthSet.layers.includes("mouthWide")) {
+    if (smile > 0.55 && open < 0.35 && mouthSet.layers.includes("mouthSmile")) {
+      layerId = "mouthSmile";
+    } else if (open > 0.78 && mouthSet.layers.includes("mouthTongue")) {
+      layerId = "mouthTongue";
+    } else if (open > 0.72 && mouthSet.layers.includes("mouthWide")) {
       layerId = "mouthWide";
     } else if (open > 0.72 && mouthSet.layers.includes("beakOpen")) {
       layerId = "beakOpen";
+    } else if (open > 0.48 && mouthSet.layers.includes("mouthOh")) {
+      layerId = "mouthOh";
     } else if (open > 0.38) {
       layerId =
-        mouthSet.layers.find(
-          (id) => id.toLowerCase().includes("open"),
+        mouthSet.layers.find((id) =>
+          id.toLowerCase().includes("open"),
         ) ?? mouthSet.layers[mouthSet.layers.length - 1];
     } else if (open > 0.12) {
       layerId =
-        mouthSet.layers.find(
-          (id) => id.toLowerCase().includes("half"),
-        ) ?? mouthSet.layers[Math.min(1, mouthSet.layers.length - 1)];
+        mouthSet.layers.find((id) =>
+          id.toLowerCase().includes("half"),
+        ) ??
+        (mouthSet.layers.includes("mouthOh")
+          ? "mouthOh"
+          : mouthSet.layers[Math.min(1, mouthSet.layers.length - 1)]);
     }
 
     if (!mouthSet.layers.includes(layerId)) {

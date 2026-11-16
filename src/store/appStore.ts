@@ -36,7 +36,7 @@ export interface AppStore {
   behaviors: Record<BehaviorKey, boolean>;
   showDebugOverlay: boolean;
   sharedBufferAvailable: boolean;
-  mobilePanel: "stage" | "controls";
+  mobilePanel: "stage" | "controls" | "create";
 
   setStatus: (status: PipelineStatus, message?: string) => void;
   setCameraEnabled: (enabled: boolean) => void;
@@ -47,7 +47,7 @@ export interface AppStore {
   setBehaviors: (behaviors: Record<BehaviorKey, boolean>) => void;
   setShowDebugOverlay: (show: boolean) => void;
   setSharedBufferAvailable: (available: boolean) => void;
-  setMobilePanel: (panel: "stage" | "controls") => void;
+  setMobilePanel: (panel: "stage" | "controls" | "create") => void;
 }
 
 export const DEFAULT_BEHAVIORS: Record<BehaviorKey, boolean> = {

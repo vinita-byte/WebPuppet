@@ -2,3 +2,7 @@ export * from "./StudioShell";
 export * from "./WebcamPreview";
 export * from "./CharacterPicker";
 export * from "./ControlsPanel";
+export * from "./ScenePicker";
+export * from "./AspectPicker";
+export * from "./SvgIdeasPanel";
+export * from "./ExportPuppetButton";
