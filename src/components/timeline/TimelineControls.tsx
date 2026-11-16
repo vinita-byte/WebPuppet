@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { usePuppetStore } from "@/store/puppetStore";
 import { useRecordingStore } from "@/store/recordingStore";
+import { useVideoStore } from "@/store/videoStore";
 import type { Keyframe } from "@/store/types";
 
 function formatMs(ms: number): string {
@@ -13,7 +14,11 @@ function formatMs(ms: number): string {
   return `${s}.${rem}s`;
 }
 
-export function TimelineControls() {
+export interface TimelineControlsProps {
+  getAudioStream?: () => MediaStream | null;
+}
+
+export function TimelineControls({ getAudioStream }: TimelineControlsProps) {
   const {
     state,
     keyframes,
@@ -30,6 +35,18 @@ export function TimelineControls() {
     pause,
     setLoop,
   } = useRecordingStore();
+
+  const videoStatus = useVideoStore((s) => s.status);
+  const videoError = useVideoStore((s) => s.error);
+  const exportLabel = useVideoStore((s) => s.exportLabel);
+  const exportProgress = useVideoStore((s) => s.exportProgress);
+  const hasVideo = useVideoStore((s) => !!s.blob);
+  const startTake = useVideoStore((s) => s.startTake);
+  const stopTake = useVideoStore((s) => s.stopTake);
+  const clearTake = useVideoStore((s) => s.clearTake);
+  const downloadMov = useVideoStore((s) => s.downloadMov);
+  const downloadMp4 = useVideoStore((s) => s.downloadMp4);
+  const disposeSession = useVideoStore((s) => s.disposeSession);
 
   const recordStartRef = useRef(0);
   const playStartRef = useRef(0);
@@ -107,6 +124,38 @@ export function TimelineControls() {
     setPlayhead,
   ]);
 
+  // Drop the in memory video take when the tab/session closes.
+  useEffect(() => {
+    const onLeave = () => {
+      void disposeSession();
+    };
+    window.addEventListener("pagehide", onLeave);
+    window.addEventListener("beforeunload", onLeave);
+    return () => {
+      window.removeEventListener("pagehide", onLeave);
+      window.removeEventListener("beforeunload", onLeave);
+      void disposeSession();
+    };
+  }, [disposeSession]);
+
+  const onRecord = async () => {
+    arm();
+    startRecording();
+    await startTake(getAudioStream?.() ?? null);
+  };
+
+  const onStop = async () => {
+    stopRecording();
+    await stopTake();
+  };
+
+  const onClear = () => {
+    clearKeyframes();
+    clearTake();
+  };
+
+  const canExportVideo = hasVideo && videoStatus !== "exporting";
+
   return (
     <div className="flex flex-col gap-2 border-t border-white/10 bg-[#121820] px-3 py-2 text-sm text-slate-200 sm:gap-3 sm:px-4 sm:py-3">
       <div className="flex flex-wrap items-center gap-2">
@@ -117,10 +166,7 @@ export function TimelineControls() {
         {state === "idle" || state === "armed" ? (
           <button
             type="button"
-            onClick={() => {
-              arm();
-              startRecording();
-            }}
+            onClick={() => void onRecord()}
             className="rounded bg-rose-600 px-3 py-1.5 font-medium text-white hover:bg-rose-500"
           >
             Record
@@ -128,7 +174,7 @@ export function TimelineControls() {
         ) : state === "recording" ? (
           <button
             type="button"
-            onClick={stopRecording}
+            onClick={() => void onStop()}
             className="rounded bg-rose-800 px-3 py-1.5 font-medium text-white hover:bg-rose-700"
           >
             Stop
@@ -146,8 +192,8 @@ export function TimelineControls() {
 
         <button
           type="button"
-          onClick={clearKeyframes}
-          disabled={keyframes.length === 0}
+          onClick={onClear}
+          disabled={keyframes.length === 0 && !hasVideo}
           className="rounded border border-white/15 px-3 py-1.5 hover:bg-white/5 disabled:opacity-40"
         >
           Clear
@@ -180,6 +226,61 @@ export function TimelineControls() {
         }}
         className="w-full accent-sky-500"
       />
+
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-[11px] font-medium tracking-wide text-slate-400 uppercase">
+          Video take
+        </span>
+        {videoStatus === "recording" ? (
+          <span className="text-xs text-rose-300">Capturing stage + mic…</span>
+        ) : null}
+        {videoStatus === "ready" ? (
+          <span className="text-xs text-emerald-300">Take ready in memory</span>
+        ) : null}
+        {videoStatus === "idle" && !hasVideo ? (
+          <span className="text-xs text-slate-500">
+            Record to capture a downloadable take
+          </span>
+        ) : null}
+
+        <button
+          type="button"
+          data-testid="download-mov"
+          disabled={!canExportVideo}
+          onClick={() => void downloadMov()}
+          className="rounded border border-amber-400/40 bg-amber-500/10 px-3 py-1.5 text-amber-100 hover:bg-amber-500/20 disabled:opacity-40"
+        >
+          Download MOV
+        </button>
+        <button
+          type="button"
+          data-testid="download-mp4"
+          disabled={!canExportVideo}
+          onClick={() => void downloadMp4()}
+          className="rounded border border-sky-400/40 bg-sky-500/10 px-3 py-1.5 text-sky-100 hover:bg-sky-500/20 disabled:opacity-40"
+        >
+          Download MP4
+        </button>
+
+        {exportLabel ? (
+          <span className="text-xs text-slate-400">
+            {exportLabel}{" "}
+            {exportProgress > 0
+              ? `${Math.round(exportProgress * 100)}%`
+              : ""}
+          </span>
+        ) : null}
+      </div>
+
+      {videoError ? (
+        <p className="rounded border border-rose-500/30 bg-rose-500/10 px-2.5 py-2 text-xs text-rose-100">
+          {videoError}
+        </p>
+      ) : null}
+      <p className="text-[11px] leading-relaxed text-slate-500">
+        Video stays in this browser tab only. Closing the tab or pressing Clear
+        removes the take so it does not keep using memory.
+      </p>
     </div>
   );
 }

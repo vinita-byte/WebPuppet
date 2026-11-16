@@ -53,5 +53,10 @@ export function useLipSync() {
     setVisemeWeights({ rest: 1 });
   }, [setMicEnabled, setVisemeWeights]);
 
-  return { start, stop, isRunning, lastFrame };
+  const getMediaStream = useCallback(
+    () => analyzerRef.current?.getMediaStream() ?? null,
+    [],
+  );
+
+  return { start, stop, isRunning, lastFrame, getMediaStream };
 }

@@ -76,6 +76,7 @@ export interface PuppetState {
   dragOffsets: Record<string, { x: number; y: number }>;
 
   setCharacter: (id: string) => void;
+  setCustomCharacter: (character: CharacterDef) => void;
   setRotation: (rotation: HeadRotation) => void;
   setDisplayRotation: (rotation: HeadRotation) => void;
   setFace: (face: Partial<FaceSignals>) => void;
@@ -130,6 +131,27 @@ export const usePuppetStore = create<PuppetState>((set, get) => ({
     const next = boot(id);
     set({
       ...next,
+      rotation: { yaw: 0, pitch: 0, roll: 0 },
+      displayRotation: { yaw: 0, pitch: 0, roll: 0 },
+      face: initialFace,
+      visemeWeights: { rest: 1 },
+    });
+  },
+
+  setCustomCharacter: (character) => {
+    const layers = nodesFromCharacter(character);
+    const activeSwaps: Record<string, string> = {};
+    for (const set of character.swapSets) {
+      activeSwaps[set.id] = set.defaultLayerId;
+    }
+    set({
+      characterId: character.id,
+      character,
+      layers,
+      layerOrder: character.layers.map((l) => l.id),
+      activeSwaps,
+      activeTriggers: {},
+      dragOffsets: {},
       rotation: { yaw: 0, pitch: 0, roll: 0 },
       displayRotation: { yaw: 0, pitch: 0, roll: 0 },
       face: initialFace,

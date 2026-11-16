@@ -274,7 +274,7 @@ export function StudioShell() {
       </div>
 
       <div className="shrink-0">
-        <TimelineControls />
+        <TimelineControls getAudioStream={lipSync.getMediaStream} />
       </div>
     </div>
   );

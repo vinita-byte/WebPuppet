@@ -18,8 +18,10 @@ Privacy: camera and mic data never leave the device.
 - Behaviors toggles
 - Pixi viewport
 - Timeline record, play, clear, loop
-- Export puppet zip (puppet.json, layer PNGs, README; no camera or mic data)
-- Autosave of settings and last recording to IndexedDB
+- Character package export/import (.webpuppet.zip with puppet.json; prefer SVG layer assets, PNG supported)
+- Record video take of the Pixi stage (+ mic when available); download MOV or MP4 via on device ffmpeg.wasm
+- Video takes are memory only and cleared on Clear, tab close, or session dispose
+- Autosave of settings and last keyframe recording to IndexedDB (video is never persisted)
 
 ### Agent discovery files
 - `/llms.txt`

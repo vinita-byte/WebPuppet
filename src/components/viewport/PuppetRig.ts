@@ -1,4 +1,4 @@
-import { Container, Graphics } from "pixi.js";
+import { Container, Graphics, Sprite } from "pixi.js";
 import type { CharacterDef } from "@/puppets/registry";
 import type {
   HeadRotation,
@@ -8,11 +8,13 @@ import type {
 
 interface LayerVisual {
   container: Container;
-  graphics: Graphics;
+  graphics: Graphics | null;
+  sprite: Sprite | null;
 }
 
 /**
  * Hierarchical multi-layer 2D puppet built from a CharacterDef.
+ * Supports procedural Graphics draw() layers and imported SVG/PNG sprites.
  */
 export class PuppetRig {
   readonly root: Container;
@@ -29,13 +31,14 @@ export class PuppetRig {
 
     // Parents must exist before children — defs are authored top-down.
     for (const def of character.layers) {
-      this.buildLayer(def.id, def.parentId, def.zIndex ?? 0);
+      this.buildLayer(def.id, def.parentId, def.zIndex ?? 0, def.assetUrl);
     }
 
     for (const def of character.layers) {
       const visual = this.layers.get(def.id);
       if (!visual) continue;
-      def.draw(visual.graphics);
+      if (visual.sprite) continue;
+      if (visual.graphics) def.draw(visual.graphics);
     }
 
     this.applyRestPose();
@@ -46,13 +49,25 @@ export class PuppetRig {
     id: string,
     parentId: string | null,
     zIndex: number,
+    assetUrl?: string,
   ): void {
     const container = new Container();
     container.label = id;
     container.zIndex = zIndex;
-    const graphics = new Graphics();
-    container.addChild(graphics);
-    this.layers.set(id, { container, graphics });
+
+    let graphics: Graphics | null = null;
+    let sprite: Sprite | null = null;
+
+    if (assetUrl) {
+      sprite = Sprite.from(assetUrl);
+      sprite.anchor.set(0.5);
+      container.addChild(sprite);
+    } else {
+      graphics = new Graphics();
+      container.addChild(graphics);
+    }
+
+    this.layers.set(id, { container, graphics, sprite });
 
     if (parentId) {
       const parent = this.layers.get(parentId);

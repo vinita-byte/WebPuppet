@@ -2,6 +2,8 @@
 
 import { Application, Container, Graphics, Text } from "pixi.js";
 import { useEffect, useRef } from "react";
+import { isRecordingHudHidden } from "@/lib/recordingHudBridge";
+import { registerViewportCanvas } from "@/lib/viewportBridge";
 import { usePuppetStore } from "@/store/puppetStore";
 import type { HeadRotation } from "@/store/types";
 import { PuppetRig } from "./PuppetRig";
@@ -53,6 +55,7 @@ export function PuppetViewport({
 
       host.appendChild(app.canvas);
       appRef.current = app;
+      registerViewportCanvas(app.canvas);
 
       const stageRoot = new Container();
       stageRoot.sortableChildren = true;
@@ -105,14 +108,18 @@ export function PuppetViewport({
         const rotation = overrideRef.current ?? state.displayRotation;
         rig.syncFromStore(state.layers, rotation);
         if (debugTextRef.current) {
-          debugTextRef.current.text = [
-            state.character.shortName,
-            `fps ${state.fps || "-"}`,
-            `yaw ${rotation.yaw.toFixed(1)} deg`,
-            `pitch ${rotation.pitch.toFixed(1)} deg`,
-            `roll ${rotation.roll.toFixed(1)} deg`,
-            state.trackingActive ? "TRACK" : "IDLE",
-          ].join("  |  ");
+          const hideHud = isRecordingHudHidden();
+          debugTextRef.current.visible = !hideHud;
+          if (!hideHud) {
+            debugTextRef.current.text = [
+              state.character.shortName,
+              `fps ${state.fps || "-"}`,
+              `yaw ${rotation.yaw.toFixed(1)} deg`,
+              `pitch ${rotation.pitch.toFixed(1)} deg`,
+              `roll ${rotation.roll.toFixed(1)} deg`,
+              state.trackingActive ? "TRACK" : "IDLE",
+            ].join("  |  ");
+          }
         }
       });
 
@@ -162,6 +169,7 @@ export function PuppetViewport({
 
     return () => {
       disposed = true;
+      registerViewportCanvas(null);
       const current = appRef.current;
       if (current) {
         (current as Application & { __cleanup?: () => void }).__cleanup?.();
