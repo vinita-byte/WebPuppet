@@ -19,9 +19,12 @@ type FFmpegCtor = new () => FFmpegInstance;
 
 declare global {
   interface Window {
-    FFmpegWASM?: { FFmpeg: FFmpegCtor; toBlobURL?: never };
+    FFmpegWASM?: { FFmpeg: FFmpegCtor };
   }
 }
+
+/** Same origin assets under public/ffmpeg (required for Worker under COEP). */
+const FFMPEG_BASE = "/ffmpeg";
 
 let ffmpegPromise: Promise<FFmpegInstance> | null = null;
 let utilPromise: Promise<{
@@ -37,14 +40,14 @@ async function loadScript(src: string): Promise<void> {
     script.async = true;
     script.dataset.ffmpeg = src;
     script.onload = () => resolve();
-    script.onerror = () => reject(new Error(`Failed to load ${src}`));
+    script.onerror = () =>
+      reject(new Error("Could not load the video converter script."));
     document.head.appendChild(script);
   });
 }
 
 async function getUtil() {
   if (!utilPromise) {
-    // @ffmpeg/util is safe to bundle; keep ffmpeg core/worker on CDN UMD.
     utilPromise = import("@ffmpeg/util");
   }
   return utilPromise;
@@ -53,22 +56,22 @@ async function getUtil() {
 async function getFfmpeg(): Promise<FFmpegInstance> {
   if (!ffmpegPromise) {
     ffmpegPromise = (async () => {
-      // UMD build avoids Turbopack analyzing the ESM Worker(new URL(...)) path.
-      await loadScript(
-        "https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/umd/ffmpeg.js",
-      );
+      // Load from our own origin so the Worker (814.ffmpeg.js) is same origin.
+      // Cross origin Workers are blocked (the jsDelivr error you hit).
+      await loadScript(`${FFMPEG_BASE}/ffmpeg.js`);
       const FFmpeg = window.FFmpegWASM?.FFmpeg;
       if (!FFmpeg) {
         throw new Error("FFmpeg failed to load in this browser.");
       }
       const { toBlobURL } = await getUtil();
-      const base =
-        "https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/umd";
       const ffmpeg = new FFmpeg();
       await ffmpeg.load({
-        coreURL: await toBlobURL(`${base}/ffmpeg-core.js`, "text/javascript"),
+        coreURL: await toBlobURL(
+          `${FFMPEG_BASE}/ffmpeg-core.js`,
+          "text/javascript",
+        ),
         wasmURL: await toBlobURL(
-          `${base}/ffmpeg-core.wasm`,
+          `${FFMPEG_BASE}/ffmpeg-core.wasm`,
           "application/wasm",
         ),
       });
