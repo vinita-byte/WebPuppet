@@ -133,14 +133,14 @@ export function PuppetViewport({
         const state = usePuppetStore.getState();
         // Keep the full puppet inside the frame with a comfortable margin.
         const fit = Math.max(360, state.character.fitHeight);
-        const short = app.screen.height < 360;
-        const pad = short ? 0.68 : 0.78;
-        const scale =
-          (Math.min(app.screen.width, app.screen.height) * pad) / fit;
+        const short = app.screen.height < 420;
+        const byH = (app.screen.height * (short ? 0.72 : 0.84)) / fit;
+        const byW = (app.screen.width * 0.7) / fit;
+        const scale = Math.min(byH, byW);
         rig.root.scale.set(scale);
         rig.root.position.set(
           app.screen.width / 2,
-          app.screen.height * (short ? 0.5 : 0.54),
+          app.screen.height * (short ? 0.48 : 0.55),
         );
         paintScene();
       };
