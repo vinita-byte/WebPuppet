@@ -297,9 +297,12 @@ export function TimelineControls({
     >
       {!compact ? (
         <div
-          role="separator"
+          role="slider"
           aria-orientation="horizontal"
           aria-label="Resize timeline"
+          aria-valuemin={56}
+          aria-valuemax={360}
+          aria-valuenow={timelineHeight}
           tabIndex={0}
           onPointerDown={onResizePointerDown}
           onPointerMove={onResizePointerMove}

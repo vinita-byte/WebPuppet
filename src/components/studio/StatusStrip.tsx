@@ -79,7 +79,7 @@ export function StatusStrip({
   ];
 
   return (
-    <footer
+    <div
       className="flex shrink-0 flex-wrap items-center gap-x-4 gap-y-1 border-t border-[var(--border)] bg-[var(--surface-2)] px-3 py-1.5 text-xs text-[var(--muted)]"
       role="status"
       aria-live="polite"
@@ -94,6 +94,6 @@ export function StatusStrip({
           </span>
         </Tooltip>
       ))}
-    </footer>
+    </div>
   );
 }
