@@ -1,6 +1,9 @@
 # WebPuppet
 
+
 WebPuppet is a browser face puppet studio. Webcam face tracking drives layered 2D puppets on your device. Camera and mic data never leave your browser.
+
+**Live demo:** https://webpuppet.vercel.app/
 
 ## Stack
 
